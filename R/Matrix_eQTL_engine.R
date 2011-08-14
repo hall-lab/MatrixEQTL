@@ -31,8 +31,7 @@ SlicedData <- setRefClass('SlicedData',
 			nSlices1 <<- sl;
 		}
 	},	
-	LoadFile = function(filename)
-	{
+	LoadFile = function(filename) {
 		fid = file(description = filename, open = 'rt', blocking = FALSE, raw = FALSE)
 		
 		lines = readLines(con = fid, n = max(fileSkipRows,1), ok = TRUE, warn = TRUE)
@@ -141,9 +140,9 @@ SlicedData <- setRefClass('SlicedData',
 	SetNanRowMean = function() {
 		for(sl in 1:nSlices()) {
 			slice = getSlice(sl);
-			if(any(is.nan(slice))) {
+			if(any(!is.finite(slice))) {
 				rowmean = rowMeans(slice, na.rm = TRUE);
-				rowmean[is.na(rowmean)] = 0;
+				rowmean[!is.finite(rowmean)] = 0;
 				for(j in 1:ncol(slice)) {
 					where1 = is.na(slice[,j]);
 					slice[where1,j] = rowmean[where1];
@@ -205,6 +204,17 @@ SlicedData <- setRefClass('SlicedData',
 			setSlice(sl, getSlice(sl)[ ,subset]);
 		}
 		columnNames <<- columnNames[subset];
+	},
+	RowRemoveZeroEps = function(){
+		for(sl in 1:nSlices()) {
+			slice = getSlice(sl);
+			amean = rowMeans(abs(slice));
+			remove = (amean < .Machine$double.eps*nCols());
+			if(any(remove)) {
+				rowNameSlices[[sl]] <<- rowNameSlices[[sl]][!remove];
+				setSlice(sl, slice[!remove, ]);
+			}
+		}
 	}
 	)
 )
@@ -285,7 +295,7 @@ Matrix_eQTL_engine = function(snps, gene, cvrt = SlicedData$new(), output_file_n
 				}
 		}
 			div = sqrt(crossprod(x[i, ]));
-			if(div < .Machine$double.eps) {
+			if(div < .Machine$double.eps*ncol(x)) {
 					stop('Colinear or zero covariates detected');
 			}
 			x[i, ] = x[i, ] / div;
@@ -398,6 +408,8 @@ Matrix_eQTL_engine = function(snps, gene, cvrt = SlicedData$new(), output_file_n
 		gene$RowMatrixMultiply(correctionMatrix);
 	}
 
+	gene$RowStandardizeCentered();
+	
 	# Orthogonolize expression w.r.t. covariates
 	status('Orthogonolizing expression w.r.t. covariates');
 	for(sl in 1:gene$nSlices()) {
@@ -405,6 +417,8 @@ Matrix_eQTL_engine = function(snps, gene, cvrt = SlicedData$new(), output_file_n
 		slice = slice - tcrossprod(slice,cvrt$getSlice(1)) %*% cvrt$getSlice(1);
 		gene$setSlice(sl, slice);
 	}
+	gene$RowRemoveZeroEps();
+
 	
 	status('Standardizing expression');
 	gene$RowStandardizeCentered();
@@ -449,11 +463,11 @@ Matrix_eQTL_engine = function(snps, gene, cvrt = SlicedData$new(), output_file_n
 	for(sc in 1:snps_list[[1]]$nSlices()) {
 		for(gc in 1:gene$nSlices()) {
 			if(useModel == modelLINEAR) {
-				cor = abs(tcrossprod(snps_list[[1]]$getSlice(sc),gene$getSlice(gc)));
-				select = which(cor >= rThresh, arr.ind=TRUE );
+				cor = (tcrossprod(snps_list[[1]]$getSlice(sc),gene$getSlice(gc)));
+				select = which(abs(cor) >= rThresh, arr.ind=TRUE );
 				rsub  = cor[select];
-				t = rsub *sqrt( dfFull / (1-rsub ^2));
-				pv = pt(-t,dfFull)*2;
+				test = rsub *sqrt( dfFull / (1-rsub ^2));
+				pv = pt(-abs(test),dfFull)*2;
 				rm(cor);
 			} else if(useModel == modelANOVA) {
 				r2 = tcrossprod(snps_list[[1]]$getSlice(sc),gene$getSlice(gc))^2;
@@ -462,13 +476,13 @@ Matrix_eQTL_engine = function(snps, gene, cvrt = SlicedData$new(), output_file_n
 				}
 				select = which(r2 >= r2Thresh, arr.ind=TRUE );
 				rsub = r2[select];
-				f = rsub/(1-rsub) * (dfFull/nVarTested);
-				pv = pf(1./f, dfFull, nVarTested);					
+				test = rsub/(1-rsub) * (dfFull/nVarTested);
+				pv = pf(1./test, dfFull, nVarTested);					
 				rm(r2);
 			}
 			snames = snameSlices[[sc]][select[,1]];
 			gnames = gnameSlices[[gc]][select[,2]];
-			dump2 = data.frame(snames,gnames,pv, row.names = NULL, check.rows = FALSE, check.names = TRUE, stringsAsFactors = FALSE)
+			dump2 = data.frame(snames,gnames,pv, test, row.names = NULL, check.rows = FALSE, check.names = TRUE, stringsAsFactors = FALSE)
 			write.table(dump2, file = fid, quote = FALSE, sep = '\t', row.names = FALSE, col.names = FALSE);
 			
 			curCount = curCount + nrow(snps_list[[1]]$getSlice(sc))*nrow(gene$getSlice(gc));

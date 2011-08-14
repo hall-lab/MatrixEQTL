@@ -92,5 +92,6 @@ Acts as \code{M = M*multiplier}. }
 
     \item{\code{RowStandardizeCentered()}:}{ Set the mean of each row to zero and the sum of squares to one. }
     \item{\code{SetNanRowMean()}:}{ Impute rows with row mean. Rows full of NaN's are imputed with zeros. }
+    \item{\code{RowRemoveZeroEps()}:}{ Removes rows of zeros and those that are nearly zero. }
   }
 }
