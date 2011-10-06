@@ -1,16 +1,22 @@
 \name{Matrix_eQTL_engine}
 \alias{Matrix_eQTL_engine}
+\alias{Matrix_eQTL_engine_cis}
 \title{
 Perform eQTL analysis.
 }
 \description{
-Test for association between every row of the \code{snps} and every row of the \code{gene}
-using either linear or ANOVA model, as defined by the \code{useModel} parameter.
-The testing procedure accounts for extra covariates in \code{cvrt} parameter.
+\code{Matrix_eQTL_engine} tests for association between every row of the \code{snps}
+and every row of the \code{gene}
+using either linear or ANOVA model, as defined by \code{useModel}.
+The testing procedure accounts for extra covariates in \code{cvrt}.
 To account for heteroskedastic and/or correlated errors,
 set the parameter \code{errorCovariance} to the error covariance matrix.
+Associations significant at \code{pvOutputThreshold} are saved to \code{output_file_name},
+with corresponding test statistics, p-values, and estimates of false discovery rate.
 
-Associations significant at \code{pvOutputThreshold} are saved to \code{output_file_name}.
+
+
+
 }
 \usage{
 Matrix_eQTL_engine(snps, 
@@ -21,6 +27,18 @@ Matrix_eQTL_engine(snps,
                    useModel = modelLINEAR, 
                    errorCovariance = numeric(), 
                    verbose = FALSE)
+Matrix_eQTL_engine_cis(snps, 
+                       gene, 
+                       cvrt = SlicedData$new(), 
+                       output_file_name, 
+                       pvOutputThreshold_cis = 1e-3,
+                       pvOutputThreshold_tra = 1e-6,
+                       useModel = modelLINEAR, 
+                       errorCovariance = numeric(), 
+                       verbose=FALSE, 
+                       snpspos, 
+                       genepos,
+                       cisDist = 1e6 )
 }
 \arguments{
   \item{snps}{
@@ -44,6 +62,8 @@ Is the file with this name exists, it will be overwritten.
   \item{pvOutputThreshold}{
 numeric. Only gene-SNP pairs significant at this level will be saved in \code{output_file_name}.	
 }
+  \item{pvOutputThreshold_cis}{ Same as \code{pvOutputThreshold}, but for cis-eQTLs.}
+  \item{pvOutputThreshold_tra}{ Same as \code{pvOutputThreshold}, but for trans-eQTLs.}
   \item{useModel}{
 numeric. Set it to \code{modelLINEAR} to use the linear model 
 (additive effect of the SNP on the gene), or
@@ -56,6 +76,16 @@ Use this parameter to account for heteroscedastic and/or correlated errors.
   \item{verbose}{
 logical. Set to \code{TRUE} to display detailed report on the progress.
 }
+  \item{snpspos}{
+data.frame with information about SNP locations, with 3 columns - SNP name, chromosome, and position.
+}
+  \item{genepos}{
+data.frame with information about transcript locations, with 4 columns - the name, chromosome, and positions of the left and right ends.
+}
+  \item{cisDist}{
+numeric. SNP-gene pairs within this distance will be considered 'cis-'. The distance is measured from the nearest end of the gene.
+}
+
 }
 \details{
 Note that the the columns of \code{gene}, \code{snps}, and \code{cvrt} must match.
