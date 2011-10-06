@@ -8,13 +8,13 @@ modelLINEAR_CROSS = 1113461L;
 SlicedData <- setRefClass( 'SlicedData',
 	fields = list( 
 		dataEnv = 'environment',
-		nSlices1 = 'integer',
+		nSlices1 = 'numeric',
 		rowNameSlices = 'list',
 		columnNames = 'character',
 		fileDelimiter = 'character',
 		fileSkipColumns = 'numeric',
-		fileSkipRows = 'integer',
-		fileSliceSize = 'integer',
+		fileSkipRows = 'numeric',
+		fileSliceSize = 'numeric',
 		fileOmitCharacters = 'character'
 	),
 	methods = list(
@@ -494,7 +494,7 @@ setMethod("show", "SlicedData",	function(object) {
 .OutputSaver_FRD <- setRefClass('.OutputSaver_FRD',
 	fields = list( 
 		dataEnv = 'environment',
-		nBlocks = 'integer',
+		nBlocks = 'numeric',
 		gene_names = 'character',
 		snps_names = 'character',
 		gene1 = 'SlicedData',
@@ -545,7 +545,7 @@ setMethod("show", "SlicedData",	function(object) {
 		FDR_collection = c(FDR_collection, recursive = TRUE );
 		dim(FDR_collection) = c(4, length(FDR_collection)/4);
 		FDR_collection = t(FDR_collection);
-		nBlocks <<- 1;	
+		nBlocks <<- 1L;	
 		setBlock(1, FDR_collection);
 	},
 	RemoveCis = function( cis.class ) {
@@ -556,7 +556,7 @@ setMethod("show", "SlicedData",	function(object) {
 		CombineInOneBlock();
 		cis.class$CombineInOneBlock();
 		cis.gene.snps = cis.class$getBlock(1);
-		my.block = getBlock(1);
+		my.block = getBlock(1L);
 		max.gene = max( cis.gene.snps[ ,2], my.block[ ,2] );
 		
 		remove = (	my.block[ ,1] * max.gene + my.block[ ,2] 
@@ -573,6 +573,9 @@ setMethod("show", "SlicedData",	function(object) {
 		snps1 <<- SlicedData$new();
 
 		CombineInOneBlock();		
+		
+		FDR = matrix(0,0,1);
+		FDR_collection = matrix(0,0,4);
 		
 		if(nBlocks > 0) {
 			FDR_collection = getBlock(1);
@@ -1139,7 +1142,7 @@ Matrix_eQTL_main = function(
 	}
 	
 	################################# Prepare counters ##########################
-	pvbins = 0; statbins = 0; do.hist = FALSE;
+	pvbins = NULL; statbins = 0; do.hist = FALSE;
 	if( ( pvalue.hist[1] != FALSE ) | ( length(pvalue.hist) > 1L) ) {
 		if(class(pvalue.hist) == 'logical') {
 			pvalue.hist = 50;
@@ -1267,8 +1270,8 @@ Matrix_eQTL_main = function(
 		dataEnv = 'environment',
 		ntests = 'numeric',
 		neqtls = 'numeric',
-		snSlices = 'integer',
-		gnSlices = 'integer',
+		snSlices = 'numeric',
+		gnSlices = 'numeric',
 		pvbins1 = 'numeric',
 		statbins1 = 'numeric',
 		hist.count = 'numeric'

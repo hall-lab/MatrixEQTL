@@ -115,7 +115,7 @@ data.frame with information about transcript locations, with 4 columns - the nam
 numeric. SNP-gene pairs within this distance are considered local. The distance is measured from the nearest end of the gene.
 }
   \item{pvalue.hist}{
-	If \code{pvalue.hist} is not \code{FALSE}, the function returns information to plot the histogram(s) of (local/distant/all) p-values.
+	If \code{pvalue.hist} is not \code{FALSE}, the function returns sufficient information to plot the histogram(s) of (local/distant/all) p-values.
 	Set \code{pvalue.hist} to a positive integer to build the histogram with \code{pvalue.hist} bins of equal size.
 	Alternatively, a custom set of bin edges can be defined via \code{pvalue.hist}.
 }

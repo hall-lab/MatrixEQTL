@@ -2,7 +2,7 @@ Package: MatrixEQTL
 Type: Package
 Title: Matrix eQTL: Ultra fast eQTL analysis via large matrix
         operations
-Version: 1.5.0
+Version: 1.5.1
 Date: 2011-10-06
 Author: Andrey Shabalin
 Maintainer: Andrey Shabalin <shabalin@email.unc.edu>
@@ -18,6 +18,6 @@ Description: Matrix eQTL is designed for fast eQTL analysis on large
 License: LGPL-3
 LazyLoad: yes
 Depends: R (>= 1.12.0), methods
-Packaged: 2012-02-06 08:33:53 UTC; Andrey
+Packaged: 2012-02-13 07:22:01 UTC; Andrey
 Repository: CRAN
-Date/Publication: 2012-02-06 09:37:50
+Date/Publication: 2012-02-13 12:05:12
