@@ -1,18 +1,21 @@
-\name{modelANOVA}
-\alias{modelANOVA}
+\name{modelLINEAR_CROSS}
+\alias{modelLINEAR_CROSS}
 \docType{data}
 \title{
 Constant for \code{\link{Matrix_eQTL_engine}}.
 }
 \description{
-Use of the constant as a parameter for \code{\link{Matrix_eQTL_engine}} 
-to indicates that the genotype should be treated as a categorical variable.
+Use of the constant as a parameter for \code{\link{Matrix_eQTL_main}} 
+to indicates that Matrix eQTL should include the interaction 
+of SNP and last covariate in the model and
+test its significance.
 }
 \usage{
-modelANOVA
+modelLINEAR_CROSS
 }
-\examples{# Number of columns (samples)
-n = 100;
+\examples{
+# Number of columns (samples)
+n = 25;
 # Number of covariates
 nc = 10;
 
@@ -23,8 +26,9 @@ noise.std = 0.1 + rnorm(n)^2;
 cvrt.mat = 2 + matrix(rnorm(n*nc), ncol = nc);
 
 # Generate the vectors with single genotype and expression variables
-snps.mat = floor(runif(n, min = 0,max = 3));
-gene.mat = 1 + (snps.mat==1) + cvrt.mat \%*\% rnorm(nc) + rnorm(n) * noise.std;
+snps.mat = cvrt.mat \%*\% rnorm(nc) + rnorm(n);
+gene.mat = 1 + 0.5 * snps.mat + cvrt.mat \%*\% rnorm(nc) + 
+               snps.mat * cvrt.mat[,nc] + rnorm(n) * noise.std;
 
 # Create 3 SlicedData objects for the analysis
 snps1 = SlicedData$new( matrix( snps.mat, nrow = 1 ) );
@@ -38,7 +42,7 @@ me = Matrix_eQTL_main(
 	cvrt = cvrt1, 
 	'Output_temp.txt', 
 	pvOutputThreshold = 1, 
-	useModel = modelANOVA, 
+	useModel = modelLINEAR_CROSS, 
 	errorCovariance = diag(noise.std^2), 
 	verbose = TRUE,
 	pvalue.hist = TRUE );
@@ -46,15 +50,16 @@ me = Matrix_eQTL_main(
 file.remove( 'Output_temp.txt' );
 
 # Pull Matrix eQTL results - t-statistic and p-value
-fstat = me$all$eqtls[ 1, 3 ];
+tstat = me$all$eqtls[ 1, 3 ];
 pvalue = me$all$eqtls[ 1, 4 ];
-rez = c( Fstat = fstat, pvalue = pvalue)
-# And compare to those from ANOVA in R
+rez = c( tstat = tstat, pvalue = pvalue)
+# And compare to those from linear regression in R
 {
-	cat('\n\n Matrix eQTL: \n'); 
+	cat(' Matrix eQTL: \n'); 
 	print(rez);
-	cat('\n R anova(lm()) output: \n')
-	lmout = anova( lm( gene.mat ~ cvrt.mat + factor(snps.mat), weights = 1/noise.std^2 ) );
-	print( c(Fstat = lmout$F[2], pvalue = lmout$"Pr(>F)"[2]) )
+	cat('\n R summary(lm()) output: \n')
+	lmout = summary(lm(gene.mat ~ snps.mat + cvrt.mat + snps.mat*cvrt.mat[,nc],
+		weights = 1/noise.std^2))$coefficients[ , 3:4];
+	print(tail(lmout))
 }
 }

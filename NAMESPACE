@@ -2,3 +2,18 @@ exportPattern("^[[:alpha:]]+")
 exportClasses(
     "SlicedData" 
 )
+exportMethods(
+    "[[",
+    "[[<-",
+    "colnames",
+    "dim",
+    "length",
+    "ncol",
+    "NCOL",
+    "nrow",
+    "NROW",
+    "rownames",
+    "show",
+    "summary" 
+)
+

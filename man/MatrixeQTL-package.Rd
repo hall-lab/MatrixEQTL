@@ -7,17 +7,20 @@
 Matrix eQTL: Ultra fast eQTL analysis via large matrix operations
 }
 \description{
-Matrix eQTL is designed for fast eQTL analysis on large datasets.
-Matrix eQTL can model and test for association between genotype and gene expression using both linear regression and ANOVA models. 
-The models can include covariates to account for such factors as population structure, gender, and clinical variables. 
-It also supports testing of heteroscedastic models and models with correlated errors.
+	Matrix eQTL is designed for fast eQTL analysis of large datasets.
+	Matrix eQTL can test for association between genotype and gene expression using linear regression 
+	with either additive or ANOVA genotype effects.
+	The models can include covariates to account for factors 
+	as population stratification, gender, and clinical variables. 
+        It also supports models with heteroscedastic and/or correlated errors,
+	false discovery rate estimation and separate treatment of local (cis) and distant (trans) eQTLs.
 }
 \details{
 \tabular{ll}{
 Package: \tab MatrixeQTL\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2011-06-25\cr
+Version: \tab 1.5.0\cr
+Date: \tab 2012-02-05\cr
 License: \tab LGPL-3 \cr
 LazyLoad: \tab yes\cr
 Depends: \tab methods\cr

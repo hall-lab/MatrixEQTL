@@ -4,6 +4,20 @@
 \alias{SlicedData-class}
 \alias{SlicedData}
 
+\alias{SlicedData-class}
+\alias{[[,SlicedData-method}
+\alias{[[<-,SlicedData-method}
+\alias{colnames,SlicedData-method}
+\alias{dim,SlicedData-method}
+\alias{length,SlicedData-method}
+\alias{ncol,SlicedData-method}
+\alias{NCOL,SlicedData-method}
+\alias{nrow,SlicedData-method}
+\alias{NROW,SlicedData-method}
+\alias{rownames,SlicedData-method}
+\alias{show,SlicedData-method}
+\alias{summary,SlicedData-method}
+
 \title{Class \code{SlicedData} for storing large matrices}
 \description{
 This class is created for fast and memory efficient manipulations
@@ -35,32 +49,12 @@ This class is used to load data for eQTL analysis by \code{\link{Matrix_eQTL_eng
 To run this example please obtain the sample data from
 \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
 }
-\examples{
 
-showClass("SlicedData")
-
-SNP_file_name = 'Sample_Data/SNP.txt';
-snps = SlicedData$new();
-snps$fileDelimiter = "\t"; # the TAB character
-snps$fileOmitCharacters = "NA"; # denote missing values;
-snps$fileSkipRows = 1; # one row of column labels
-snps$fileSkipColumns = 1; # one column of row labels
-snps$fileSliceSize = 10000; # read file in pieces of 10,000 rows
-\dontrun{
-snps$LoadFile(SNP_file_name);}
-
-## Display the dimensions and the number of slices
-
-snps$nRows()
-snps$nCols()
-snps$nSlices()
-
-}
 \keyword{classes}
 \section{Fields}{
   \describe{
-    \item{\code{dataEnv}:}{\code{environment}. Stores the slices of the data matrix.}
-    \item{\code{nSlices1}:}{\code{numeric}. Number of slices. }
+    \item{\code{dataEnv}:}{\code{environment}. Stores the slices of the data matrix. The slices should be accessed via \code{getSlice()} and \code{setSlice()} methods. }
+    \item{\code{nSlices1}:}{\code{numeric}. Number of slices. For internal use. The value should be access via \code{nSlices()} method. }
     \item{\code{rowNameSlices}:}{\code{list}. Slices of row names. }
     \item{\code{columnNames}:}{\code{character}. Column names. }
 
@@ -72,26 +66,93 @@ snps$nSlices()
   }
 }
 \section{Methods}{
-  \describe{
-    \item{\code{nSlices()}:}{ Return the number of slices. }
-    \item{\code{nCols()}:}{ Return the number of columns in the matrix. }
-    \item{\code{nRows()}:}{ Return the number of rows in the matrix. }
-    \item{\code{Clear()}:}{ Clear the object. Removes the data slices and the row and column names. }
-    \item{\code{Clone()}:}{ Make a copy of the object. Changes to the copy do not affect the source object.}
+	\describe{
+		\item{\code{nSlices()}:}{ Returns the number of slices. }
+		\item{\code{nCols()}:}{ Returns the number of columns in the matrix. }
+		\item{\code{nRows()}:}{ Returns the number of rows in the matrix. }
+		\item{\code{Clear()}:}{ Clears the object. Removes the data slices and row and column names. }
+		\item{\code{Clone()}:}{ Makes a copy of the object. Changes to the copy do not affect the source object. }
+		\item{\code{CreateFromMatrix(mat)}:}{ Creates \code{SlicedData} object from a \code{\link{matrix}}.}
+		\item{\code{LoadFile(filename, skipRows = NULL, skipColumns = NULL,} \cr 
+			\code{sliceSize = NULL, omitCharacters = NULL, delimiter = NULL)}:}{ Loads date matrix from a file. \code{filename} should be a character string. The remaining parameters specify the file format and have the same meaning as \code{file*} fields. }
+		\item{\code{SaveFile(filename)}:}{ Saves the data to a file. \code{filename} should be a character string.}
+	
+		\item{\code{getSlice(sl)}:}{ Retrieves \code{sl}-th slice of the matrix. }
+		\item{\code{setSlice(sl, value)}:}{ Set \code{sl}-th slice of the matrix. }
 
-    \item{\code{LoadFile(filename)}:}{ Load a matrix file. Set \code{file*} fields to specify the format. }
+		\item{\code{ColumnSubsample(subset)}:}{ Reorders/subsets the columns according to \code{subset}. \cr
+Acts as \code{M = M[ ,subset]} for a matrix \code{M}. }
+		\item{\code{RowReorder(ordr)}:}{ Reorders rows according to \code{ordr}. \cr
+Acts as \code{M = M[ordr, ]} for a matrix \code{M}. }
+		\item{\code{RowMatrixMultiply(multiplier)}:}{ Multiply each row by the \code{multiplier}. \cr
+Acts as \code{M = M \%*\% multiplier} for a matrix \code{M}. }
+		\item{\code{CombineInOneSlice()}:}{ Combines all slices into one. The whole matrix can then be obtained via \code{$getSlice(1)}. }
+		\item{\code{IsCombined()}:}{ Returns \code{TRUE} if the number of slices is 1 or 0. }
+		\item{\code{ResliceCombined(sliceSize = -1)}:}{ Cuts the data into slices of \code{sliceSize} rows. If \code{sliceSize} is not defined, the value of \code{fileSliceSize} field is used.}
+		\item{\code{GetAllRowNames()}:}{ Returns all row names in one vector. }
+		
+		\item{\code{RowStandardizeCentered()}:}{ Set the mean of each row to zero and the sum of squares to one. }
+		\item{\code{SetNanRowMean()}:}{ Impute rows with row mean. Rows full of NaN's are imputed with zeros. }
+		\item{\code{RowRemoveZeroEps()}:}{ Removes rows of zeros and those that are nearly zero. }
 
-    \item{\code{getSlice(sl)}:}{ Get \code{sl}-th slice of the matrix. }
-    \item{\code{setSlice(sl, value)}:}{ Set \code{sl}-th slice of the matrix. }
+		\item{\code{FindRow(rowname)}:}{ Finds row by name. Returns a pair of slice number an row number within the slice. If no row is found, the function returns \code{NULL}. }
+	}
+}
 
-    \item{\code{ColumnSubsample(subset)}:}{ Keep only the columns in the \code{subset}. 
-Acts as \code{M = M[ ,subset]}. }
-    \item{\code{RowMatrixMultiply(multiplier)}:}{ Multiply each row by the \code{multiplier}.
-Acts as \code{M = M*multiplier}. }
-    \item{\code{CombineInOneSlice()}:}{ Combines all slices into one. The whole matrix can then be obtained via \code{$getSlice(1)}. }
+\examples{
 
-    \item{\code{RowStandardizeCentered()}:}{ Set the mean of each row to zero and the sum of squares to one. }
-    \item{\code{SetNanRowMean()}:}{ Impute rows with row mean. Rows full of NaN's are imputed with zeros. }
-    \item{\code{RowRemoveZeroEps()}:}{ Removes rows of zeros and those that are nearly zero. }
-  }
+# Create a SlicedData variable
+sd = SlicedData$new();
+
+# Show the details of the empty object
+show(sd);
+
+# Create a matrix of values and assign to sd
+mat = matrix(1:12, 3, 4);
+rownames(mat) = c('row1','row2','row3');
+colnames(mat) = c('col1','col2','col3','col4');
+sd$CreateFromMatrix( mat );
+
+# Show the detail of the object (one slice)
+show(sd);
+
+# Slice it in pieces of 2 rows
+sd$ResliceCombined(sliceSize = 2L);
+
+# Show the number of slices (equivalent function calls)
+sd$nSlices()
+length(sd)
+
+# Is it all in one slice? (No)
+sd$IsCombined()
+
+# Show the column names (equivalent function calls)
+sd$columnNames
+colnames(sd)
+
+# Show row name slices
+sd$rowNameSlices
+
+# Show all row names (equivalent function calls)
+sd$GetAllRowNames()
+rownames(sd)
+
+# Print the second slice
+print( sd[[2]] )
+
+# Reorder and subset columns
+sd$ColumnSubsample( c(1,3,4) );
+
+# Reorder and subset rows
+sd$RowReorder( c(3,1) );
+
+# Show the detail of the object (one slice again)
+show(sd);
+
+# Is it all in one slice? (Yes)
+sd$IsCombined()
+
+# Find the row with name 'row1' (it is second in the first slice)
+sd$FindRow('row1');
+
 }
