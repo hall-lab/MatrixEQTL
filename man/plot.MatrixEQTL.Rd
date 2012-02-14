@@ -7,7 +7,7 @@ This method plots a histogram or Q-Q plot of p-values
 for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 }
 \usage{
-\method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, ...)
+\method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, ymin = NULL, ...)
 }
 \arguments{
   \item{x}{
@@ -18,6 +18,9 @@ A numerical value giving the amount by which plotting text and symbols should be
 }
   \item{pch}{
 Plotting "character", i.e., symbol to use. See \code{\link[graphics]{points}}.
+}
+  \item{ymin}{
+Set the top of the range of the vertical axis.
 }
 
 

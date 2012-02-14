@@ -34,15 +34,15 @@ SlicedData <- setRefClass( "SlicedData",
 	CreateFromMatrix = function( mat ) {
 		stopifnot( class(mat) == "matrix" );
 		setSliceRaw( 1L ,mat );
-		rns = rownames( mat );
-		if( is.null(rns) ) {
-			rns = paste( "Row_",(1:nrow(mat)), sep="" );
-		}
+		rns = rownames( mat, do.NULL = FALSE);
+		#if( is.null(rns) ) {
+		#	rns = paste( "Row_",(1:nrow(mat)), sep="" );
+		#}
 		rowNameSlices <<- list(rns);
-		cns = colnames( mat );
-		if( is.null(cns) ){
-			cns = paste( "Col_",(1:ncol(mat)), sep="" );
-		}
+		cns = colnames( mat, do.NULL = FALSE );
+		#if( is.null(cns) ){
+		#	cns = paste( "Col_",(1:ncol(mat)), sep="" );
+		#}
 		columnNames <<- cns;
 		return(invisible(.self));
 	},
@@ -83,7 +83,7 @@ SlicedData <- setRefClass( "SlicedData",
 	nSlices = function() {
 		return( nSlices1 );
 	},
-	LoadFile = function(filename, skipRows = NULL, skipColumns = NULL, sliceSize = NULL, omitCharacters = NULL, delimiter = NULL) {
+	LoadFile = function(filename, skipRows = NULL, skipColumns = NULL, sliceSize = NULL, omitCharacters = NULL, delimiter = NULL, rowNamesColumn = 1) {
 		if( !is.null(skipRows) ) {
 			fileSkipRows <<- skipRows;
 		}
@@ -99,6 +99,9 @@ SlicedData <- setRefClass( "SlicedData",
 		if( !is.null(delimiter) ) {
 			fileDelimiter <<- delimiter;
 		}
+		stopifnot( (fileSkipColumns == 0) || (rowNamesColumn <= fileSkipColumns) )
+		stopifnot( (fileSkipColumns == 0) || (rowNamesColumn >= 1) )
+
 		fid = file(description = filename, open = "rt", blocking = FALSE, raw = FALSE)
 		# clean object if file is open
 		Clear(); 
@@ -132,7 +135,7 @@ SlicedData <- setRefClass( "SlicedData",
 				if( fileSkipColumns > 0L ) {
 					temp = scan(file = fid, what = character(), n = fileSkipColumns, quiet = TRUE,sep = fileDelimiter);
 				}
-				rowtag[i] = temp[1];#paste(temp,collapse=" ");
+				rowtag[i] = temp[rowNamesColumn];#paste(temp,collapse=" ");
 				rowvals[[i]] = scan(file = fid, what = double(), nlines = 1, quiet = TRUE, sep = fileDelimiter, na.strings = fileOmitCharacters);
 				if( length(rowvals[[i]]) == 0L ) {
 					if(i==1L) {
@@ -516,11 +519,17 @@ setMethod("[[<-", "SlicedData",	function(x,i,value) {
 		x$setSlice(i, value);
 		return(x);
 })
+
+summary.SlicedData = function(object, ...) {
+	z = c(nCols = object$nCols(), nRows = object$nRows(), nSlices = object$nSlices());
+	return(z);
+}
+
 #setGeneric("summary")
-setMethod("summary", "SlicedData",	function(object) {
-		z = c(nCols = object$nCols(), nRows = object$nRows(), nSlices = object$nSlices());
-		return(z);
-	})
+#setMethod("summary", "SlicedData",	function(object, ...) {
+#		z = c(nCols = object$nCols(), nRows = object$nRows(), nSlices = object$nSlices());
+#		return(z);
+#	})
 #setGeneric("show", standardGeneric("show"))
 setMethod("show", "SlicedData",	function(object) {
 		cat("SlicedData object. For more information type: ?SlicedData\n");
@@ -529,13 +538,31 @@ setMethod("show", "SlicedData",	function(object) {
 		cat("Data is stored in", object$nSlices(), "slices\n");
 		if(object$nSlices()>0) {
 			z = object$getSlice(1);
-			z = z[1:min(nrow(z),10), 1:min(ncol(z),10), drop = FALSE];
-			rownames(z) = object$rowNameSlices[[1]][1:nrow(z)];
-			colnames(z) = object$columnNames[1:ncol(z)];
-			cat("Top left corner of the first slice (up to 10x10):\n");
-			show(z)
+			if(nrow(z)>0) {
+				z = z[1:min(nrow(z),10), 1:min(ncol(z),10), drop = FALSE];
+				rownames(z) = object$rowNameSlices[[1]][1:nrow(z)];
+				colnames(z) = object$columnNames[1:ncol(z)];
+				cat("Top left corner of the first slice (up to 10x10):\n");
+				show(z)
+			}
 		}		
 	})
+#show.SlicedData = function(x) {
+#		if(x$nSlices() == 0) {
+#			return( matrix(0,0,0) );
+#		}
+#		if(x$nSlices() > 1) {
+#			copy = x$Clone();
+#			copy$CombineInOneSlice();
+#		} else {
+#			copy = x;
+#		}
+#		mat = copy$getSlice(1L);
+#		rownames(mat) = rownames(copy);
+#		colnames(mat) = colnames(copy);
+#		return( mat );
+#	}
+
 setMethod("as.matrix", "SlicedData", function(x) {
 		if(x$nSlices() == 0) {
 			return( matrix(0,0,0) );
@@ -569,6 +596,55 @@ setMethod("rownames<-", "SlicedData", function(x,value) {
 		}
 		x$rowNameSlices = newNameSlices; 
 		return(x);
+	})
+setMethod("rowSums", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
+		if(x$nSlices() == 0) {
+			return( numeric() );
+		}
+		stopifnot( dims == 1 );
+		thesum = vector("list", x$nSlices());
+		for( i in 1:x$nSlices() ) {
+			thesum[[i]] = rowSums(x$getSlice(i), na.rm)
+		}
+		return(unlist(thesum, recursive = FALSE, use.names = FALSE));
+	})
+setMethod("rowMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
+		if(x$nSlices() == 0) {
+			return( numeric() );
+		}
+		stopifnot( dims == 1 );
+		thesum = vector("list", x$nSlices());
+		for( i in 1:x$nSlices() ) {
+			thesum[[i]] = rowMeans(x$getSlice(i), na.rm)
+		}
+		return(unlist(thesum, recursive = FALSE, use.names = FALSE));
+	})
+setMethod("colSums", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
+		if(x$nSlices() == 0) {
+			return( numeric() );
+		}
+		stopifnot( dims == 1 );
+		thesum = 0;
+		for( i in 1:x$nSlices() ) {
+			thesum = thesum + colSums(x$getSlice(i), na.rm)
+		}
+		return(thesum);
+	})
+setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
+		if(x$nSlices() == 0) {
+			return( numeric() );
+		}
+		stopifnot( dims == 1 );
+		thesum = 0;
+		thecounts = x$nRows();
+		for( i in 1:x$nSlices() ) {
+			slice = x$getSlice(i);
+			thesum = thesum + colSums(slice, na.rm)
+			if( na.rm ) {
+				thecounts = thecounts - colSums(is.na(slice))
+			}
+		}
+		return(thesum/thecounts);
 	})
 
 .OutputSaver_direct <- setRefClass(".OutputSaver_direct",
@@ -1346,6 +1422,7 @@ Matrix_eQTL_main = function(
 		for(gg in 1:gene$nSlices()) {
 			curgene = gene$getSlice(gg);
 			nrcg = nrow(curgene);
+			if(nrcg == 0) next;
 			
 			rp = "";
 			
@@ -1482,12 +1559,15 @@ Matrix_eQTL_main = function(
 			assign( paste(-gg), geneeqtl, dataEnv );
 		}
 		if( !is.null(stats.for.hist) ) {
-			 h = counts <- .C("bincount",
-					stats.for.hist, as.integer(length(stats.for.hist)),
-					statbins1, as.integer(length(statbins1)),
-					counts = integer(length(statbins1) - 1), right = as.logical(TRUE),
-					include = as.logical(TRUE), naok = FALSE, NAOK = FALSE,
-					DUP = FALSE, PACKAGE = "base")$counts;
+			h = hist(stats.for.hist, breaks = statbins1, 
+				include.lowest = TRUE, right = TRUE, plot = FALSE)$counts;
+# Faster, but not using the official API
+#			h = counts <- .C("bincount",
+#					stats.for.hist, as.integer(length(stats.for.hist)),
+#					statbins1, as.integer(length(statbins1)),
+#					counts = integer(length(statbins1) - 1), right = as.logical(TRUE),
+#					include = as.logical(TRUE), naok = FALSE, NAOK = FALSE,
+#					DUP = FALSE, PACKAGE = "base")$counts;
 			hist.count <<- hist.count + h;
 		}
 	},
@@ -1551,17 +1631,19 @@ Matrix_eQTL_main = function(
 	lines(xpos, ypos, col = lcol, ...);
 }
 
-plot.MatrixEQTL = function(x, cex = 0.5, pch = 19, ...) {
+plot.MatrixEQTL = function(x, cex = 0.5, pch = 19, ymin = NULL, ...) {
 	if( x$param$pvalue.hist == FALSE ) {
 		warning("Cannot plot p-value distribution: the information was not recorded.\nUse pvalue.hist!=FALSE.");
 		return(invisible());
 	}
 	if( x$param$pvalue.hist == "qqplot" ) {
 		xmin = 1/max(x$cis$ntests, x$all$ntests);
-		ymin = min( x$cis$eqtls$pvalue[1], x$cis$hist.bins[c(FALSE,x$cis$hist.counts>0)][1],
-				x$all$eqtls$pvalue[1], x$all$hist.bins[c(FALSE,x$all$hist.counts>0)][1],
-				x$trans$eqtls$pvalue[1], x$trans$hist.bins[c(FALSE,x$trans$hist.counts>0)][1],
-				na.rm = TRUE)/1.5;
+		if( is.null(ymin) ) {
+			ymin = min( x$cis$eqtls$pvalue[1], x$cis$hist.bins[c(FALSE,x$cis$hist.counts>0)][1],
+					x$all$eqtls$pvalue[1], x$all$hist.bins[c(FALSE,x$all$hist.counts>0)][1],
+					x$trans$eqtls$pvalue[1], x$trans$hist.bins[c(FALSE,x$trans$hist.counts>0)][1],
+					na.rm = TRUE)/1.5;
+		}
 		if(ymin == 0) {
 			ymin == .Machine$double.xmin
 		}

@@ -1,10 +1,11 @@
-72fcfb3f3a6eb9a799dde10dfe37cc01 *DESCRIPTION
-6bf80450e10f70be794f3f7360a143ff *NAMESPACE
-7b9e4e00e5beeeeee7c534d897765010 *R/Matrix_eQTL_engine.R
-7489047894c152f0383f97ad928c993c *man/MatrixEQTL-package.Rd
+7c65d2fac20713b95014aeb457fb36b1 *2do.txt
+4ea7205a13273a86f57931b4c2ec5687 *DESCRIPTION
+39e226d135195ce1ecd2d1a1ec20b898 *NAMESPACE
+14148ec74005c38ad9e2d4625030d363 *R/Matrix_eQTL_engine.R
+4eb6322d6bf457b07b809bc35139f484 *man/MatrixEQTL-package.Rd
 ab4ea9138a1bb3885d852398fbcb51f4 *man/Matrix_eQTL_main.Rd
-61a4e21ca6597bb3d14c456237914a32 *man/SlicedData-class.Rd
+c8c2d1a8165f7438bac7e4437f8337cc *man/SlicedData-class.Rd
 bdc1c073739e8fdc0fcb600b422a83af *man/modelANOVA.Rd
 9e147112aecc7bec9ab05d16dd8c993a *man/modelLINEAR.Rd
 474a61fda0563cd4fedc7bc29706c798 *man/modelLINEAR_CROSS.Rd
-29b0579129fab66d32abf95d3520937e *man/plot.MatrixEQTL.Rd
+3c483099c2dc6f6d3382e92aaab4842b *man/plot.MatrixEQTL.Rd

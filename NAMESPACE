@@ -3,6 +3,7 @@ exportClasses(
     "SlicedData" 
 )
 S3method(plot, MatrixEQTL)
+S3method(summary, SlicedData)
 exportMethods(
     "[[",
     "[[<-",
@@ -17,7 +18,10 @@ exportMethods(
     "rownames",
     "rownames<-",
     "show",
-    "summary",
-    "as.matrix"
+    "as.matrix",
+    "rowMeans",
+    "rowSums",
+    "colMeans",
+    "colSums"
 )
 

@@ -17,8 +17,13 @@
 \alias{rownames,SlicedData-method}
 \alias{rownames<-,SlicedData-method}
 \alias{show,SlicedData-method}
-\alias{summary,SlicedData-method}
 \alias{as.matrix,SlicedData-method}
+
+\alias{rowMeans,SlicedData-method}
+\alias{rowSums,SlicedData-method}
+\alias{colMeans,SlicedData-method}
+\alias{colSums,SlicedData-method}
+\alias{summary.SlicedData}
 
 \title{Class \code{SlicedData} for storing large matrices}
 \description{
@@ -76,12 +81,10 @@ To run this example please obtain the sample data from
 		\item{\code{Clone()}:}{ Makes a copy of the object. Changes to the copy do not affect the source object. }
 		\item{\code{CreateFromMatrix(mat)}:}{ Creates \code{SlicedData} object from a \code{\link[base]{matrix}}.}
 		\item{\code{LoadFile(filename, skipRows = NULL, skipColumns = NULL,} \cr 
-			\code{sliceSize = NULL, omitCharacters = NULL, delimiter = NULL)}:}{ Loads date matrix from a file. \code{filename} should be a character string. The remaining parameters specify the file format and have the same meaning as \code{file*} fields. }
+			\code{sliceSize = NULL, omitCharacters = NULL, delimiter = NULL, rowNamesColumn = 1)}:}{ Loads date matrix from a file. \code{filename} should be a character string. The remaining parameters specify the file format and have the same meaning as \code{file*} fields. Additional \code{rowNamesColumn} parameter specifies which of the columns of row labels to use as row identifiers.}
 		\item{\code{SaveFile(filename)}:}{ Saves the data to a file. \code{filename} should be a character string.}
-	
 		\item{\code{getSlice(sl)}:}{ Retrieves \code{sl}-th slice of the matrix. }
 		\item{\code{setSlice(sl, value)}:}{ Set \code{sl}-th slice of the matrix. }
-
 		\item{\code{ColumnSubsample(subset)}:}{ Reorders/subsets the columns according to \code{subset}. \cr
 Acts as \code{M = M[ ,subset]} for a matrix \code{M}. }
 		\item{\code{RowReorder(ordr)}:}{ Reorders rows according to \code{ordr}. \cr
@@ -91,32 +94,17 @@ Acts as \code{M = M \%*\% multiplier} for a matrix \code{M}. }
 		\item{\code{CombineInOneSlice()}:}{ Combines all slices into one. The whole matrix can then be obtained via \code{$getSlice(1)}. }
 		\item{\code{IsCombined()}:}{ Returns \code{TRUE} if the number of slices is 1 or 0. }
 		\item{\code{ResliceCombined(sliceSize = -1)}:}{ Cuts the data into slices of \code{sliceSize} rows. If \code{sliceSize} is not defined, the value of \code{fileSliceSize} field is used.}
-		\item{\code{GetAllRowNames()}:}{ Returns all row names in one vector. }
-		
+		\item{\code{GetAllRowNames()}:}{ Returns all row names in one vector. }	
 		\item{\code{RowStandardizeCentered()}:}{ Set the mean of each row to zero and the sum of squares to one. }
 		\item{\code{SetNanRowMean()}:}{ Impute rows with row mean. Rows full of NaN values are imputed with zeros. }
 		\item{\code{RowRemoveZeroEps()}:}{ Removes rows of zeros and those that are nearly zero. }
-
 		\item{\code{FindRow(rowname)}:}{ Finds row by name. Returns a pair of slice number an row number within the slice. If no row is found, the function returns \code{NULL}. }
+		\item{\code{rowMeans(x, na.rm = FALSE, dims = 1L)}:}{Returns a vector of row means. Works as \link[base]{rowMeans} but requires \code{dims} to be equal to \code{1L}.}
+		\item{\code{rowSums(x, na.rm = FALSE, dims = 1L)}:}{Returns a vector of row sums. Works as \link[base]{rowSums} but requires \code{dims} to be equal to \code{1L}.}
+		\item{\code{colMeans(x, na.rm = FALSE, dims = 1L)}:}{Returns a vector of column means. Works as \link[base]{colMeans} but requires \code{dims} to be equal to \code{1L}.}
+		\item{\code{colSums(x, na.rm = FALSE, dims = 1L)}:}{Returns a vector of column sums. Works as \link[base]{colSums} but requires \code{dims} to be equal to \code{1L}.}
 	}
 }
-
-\alias{[[,SlicedData-method}
-\alias{[[<-,SlicedData-method}
-\alias{colnames,SlicedData-method}
-\alias{colnames<-,SlicedData-method}
-\alias{dim,SlicedData-method}
-\alias{length,SlicedData-method}
-\alias{ncol,SlicedData-method}
-\alias{NCOL,SlicedData-method}
-\alias{nrow,SlicedData-method}
-\alias{NROW,SlicedData-method}
-\alias{rownames,SlicedData-method}
-\alias{rownames<-,SlicedData-method}
-\alias{show,SlicedData-method}
-\alias{summary,SlicedData-method}
-\alias{as.matrix,SlicedData-method}
-
 
 \usage{
 # x[[i]] indexing allows easy access to individual slices.
