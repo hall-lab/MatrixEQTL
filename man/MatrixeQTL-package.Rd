@@ -19,8 +19,8 @@ Matrix eQTL: Ultra fast eQTL analysis via large matrix operations
 \tabular{ll}{
 Package: \tab MatrixeQTL\cr
 Type: \tab Package\cr
-Version: \tab 1.5.0\cr
-Date: \tab 2012-02-05\cr
+Version: \tab 1.5.2\cr
+Date: \tab 2012-02-14\cr
 License: \tab LGPL-3 \cr
 LazyLoad: \tab yes\cr
 Depends: \tab methods\cr
