@@ -31,19 +31,22 @@ snps1 = SlicedData$new( matrix( snps.mat, nrow = 1 ) );
 gene1 = SlicedData$new( matrix( gene.mat, nrow = 1 ) );
 cvrt1 = SlicedData$new( t(cvrt.mat) );
 
+# name of temporary output file
+filename = tempfile();
+
 # Call the main analysis function
 me = Matrix_eQTL_main(
-	snps = snps1, 
-	gene = gene1, 
-	cvrt = cvrt1, 
-	'Output_temp.txt', 
-	pvOutputThreshold = 1, 
-	useModel = modelANOVA, 
-	errorCovariance = diag(noise.std^2), 
-	verbose = TRUE,
-	pvalue.hist = TRUE );
+    snps = snps1, 
+    gene = gene1, 
+    cvrt = cvrt1, 
+    filename, 
+    pvOutputThreshold = 1, 
+    useModel = modelANOVA, 
+    errorCovariance = diag(noise.std^2), 
+    verbose = TRUE,
+    pvalue.hist = TRUE );
 # remove the output file
-file.remove( 'Output_temp.txt' );
+unlink( filename );
 
 # Pull Matrix eQTL results - t-statistic and p-value
 fstat = me$all$eqtls[ 1, 3 ];
@@ -51,10 +54,10 @@ pvalue = me$all$eqtls[ 1, 4 ];
 rez = c( Fstat = fstat, pvalue = pvalue)
 # And compare to those from ANOVA in R
 {
-	cat('\n\n Matrix eQTL: \n'); 
-	print(rez);
-	cat('\n R anova(lm()) output: \n')
-	lmout = anova( lm( gene.mat ~ cvrt.mat + factor(snps.mat), weights = 1/noise.std^2 ) );
-	print( c(Fstat = lmout$F[2], pvalue = lmout$"Pr(>F)"[2]) )
+    cat("\n\n Matrix eQTL: \n"); 
+    print(rez);
+    cat("\n R anova(lm()) output: \n")
+    lmout = anova( lm( gene.mat ~ cvrt.mat + factor(snps.mat), weights = 1/noise.std^2 ) );
+    print( c(Fstat = lmout$F[2], pvalue = lmout$"Pr(>F)"[2]) );
 }
 }

@@ -2,10 +2,12 @@ exportPattern("^[[:alpha:]]+")
 exportClasses(
     "SlicedData" 
 )
+S3method(plot, MatrixEQTL)
 exportMethods(
     "[[",
     "[[<-",
     "colnames",
+    "colnames<-",
     "dim",
     "length",
     "ncol",
@@ -13,7 +15,9 @@ exportMethods(
     "nrow",
     "NROW",
     "rownames",
+    "rownames<-",
     "show",
-    "summary" 
+    "summary",
+    "as.matrix"
 )
 

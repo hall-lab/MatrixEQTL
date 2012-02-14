@@ -1,6 +1,5 @@
-\name{MatrixeQTL-package}
+\name{MatrixEQTL-package}
 \alias{MatrixEQTL-package}
-\alias{MatrixeQTL}
 \alias{MatrixEQTL}
 \docType{package}
 \title{
@@ -9,17 +8,16 @@ Matrix eQTL: Ultra fast eQTL analysis via large matrix operations
 \description{
 	Matrix eQTL is designed for fast eQTL analysis of large datasets.
 	Matrix eQTL can test for association between genotype and gene expression using linear regression 
-	with either additive or ANOVA genotype effects.
-	The models can include covariates to account for factors 
-	as population stratification, gender, and clinical variables. 
-        It also supports models with heteroscedastic and/or correlated errors,
+	with either additive or ANOVA (additive and dominant) genotype effects.
+	The models can include covariates to account for such factors as population stratification, gender, clinical variables, and surrogate variables.
+       Matrix eQTL also supports models with heteroscedastic and/or correlated errors,
 	false discovery rate estimation and separate treatment of local (cis) and distant (trans) eQTLs.
 }
 \details{
 \tabular{ll}{
-Package: \tab MatrixeQTL\cr
+Package: \tab MatrixEQTL\cr
 Type: \tab Package\cr
-Version: \tab 1.5.2\cr
+Version: \tab 1.6.0\cr
 Date: \tab 2012-02-14\cr
 License: \tab LGPL-3 \cr
 LazyLoad: \tab yes\cr
@@ -36,10 +34,8 @@ The software website:
 \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
 }
 \keyword{ package }
-\keyword{ MatrixeQTL }
+\keyword{ MatrixEQTL }
 \keyword{ Matrix eQTL }
-\keyword{ Andrey Shabalin }
-\keyword{ Shabalin }
 \seealso{
 See \code{\link{Matrix_eQTL_engine}} for the description and sample code.
 }
