@@ -46,9 +46,9 @@ Andrey Shabalin \email{shabalin@email.unc.edu}
 \note{
 The sample code below produces figures like these:
 
-\figure{histogram.png}{Histogram.}
+Histogram: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/histogram.png}
 
-\figure{QQplot.png}{Q-Q plot.}
+Q-Q plot:  \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/QQplot.png}
 }
 
 \examples{

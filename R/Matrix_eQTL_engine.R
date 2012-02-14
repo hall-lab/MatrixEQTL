@@ -106,7 +106,7 @@ SlicedData <- setRefClass( "SlicedData",
 		line1 = tail(lines,1);
 		splt = strsplit(line1, split = fileDelimiter, fixed = TRUE);
 		if( fileSkipRows > 0L ) {
-			columnNames <<- splt[[1]][ -(1:fileSkipColumns) ];
+			columnNames <<- splt[[1]]; # [ -(1:fileSkipColumns) ];
 		} else {
 			seek(fid, 0)
 		}		
@@ -164,6 +164,8 @@ SlicedData <- setRefClass( "SlicedData",
 		close(fid)
 		if( fileSkipRows == 0 ) {
 			columnNames <<- paste("Col_", (1:nCols()), sep="");
+		} else {
+			columnNames <<- tail(columnNames, ncol(getSliceRaw(1)));
 		}
 		if( fileSkipColumns == 0 ) {
 			cnt = 0L;
@@ -359,7 +361,7 @@ SlicedData <- setRefClass( "SlicedData",
 		columnNames <<- columnNames[subset];
 		return(invisible(.self));
 	},
-	RowReorder = function(ordr) {
+	RowReorderSimple = function(ordr) {
 		# had to use an inefficient and dirty method
 		# due to horrible memory management in R
 		if( (typeof(ordr) == "logical") && all(ordr) ) {
@@ -377,61 +379,73 @@ SlicedData <- setRefClass( "SlicedData",
 		gc();
 		return(invisible(.self));
 	},
-	#RowReorder = function(ordr) {
-		## transform logical into indices 
-		#if( typeof(ordr) == "logical" ) {
-			#if( length(ordr) == nRows() ) {
-				#ordr = which(ordr);
-			#} else {
-				#stop("Parameter \"ordr\" has wrong length")
-			#}
-		#}
+	RowReorder = function(ordr) {
+		# transform logical into indices 
+		if( typeof(ordr) == "logical" ) {
+			if( length(ordr) == nRows() ) {
+				ordr = which(ordr);
+			} else {
+				stop("Parameter \"ordr\" has wrong length")
+			}
+		}
 		## first, check that anything has to be done at all
-		#if( (length(ordr) == nRows()) && all(ordr == (1:length(ordr))) ) {
-			#return(invisible(.self));
-		#}
+		if( (length(ordr) == nRows()) && all(ordr == (1:length(ordr))) ) {
+			return(invisible(.self));
+		}
 		## check bounds
 		#if( (min(ordr) < 1) || (max(ordr) > nRows()) ) {
-			#stop("Parameter \"ordr\" is out of bounds");
+		#	stop("Parameter \"ordr\" is out of bounds");
 		#}
 		## slice the data into individual rows
-		#all_rows = vector("list", nSlices())
-		#for( i in 1:nSlices() ) {
-			#slice = getSlice(i)
-			#all_rows[[i]] = split(slice, 1:nrow(slice))
-			#setSlice(i,numeric())
-		#}
-		#all_rows = unlist(all_rows, recursive=FALSE, use.names = FALSE);
+		all_rows = vector("list", nSlices())
+		for( i in 1:nSlices() ) {
+			slice = getSliceRaw(i)
+			all_rows[[i]] = split(slice, 1:nrow(slice))
+			setSliceRaw(i,numeric())
+		}
+		gc();
+		all_rows = unlist(all_rows, recursive=FALSE, use.names = FALSE);
 		## Reorder the rows
-		#all_rows = all_rows[ordr];
+		all_rows = all_rows[ordr];
 		## get row names
-		#all_names = GetAllRowNames();
+		all_names = GetAllRowNames();
 		## erase the set
-		#rowNameSlices[] <<- 0L;
-		#rowNameSlices <<- vector("list", 0);
+		rowNameSlices <<- list();
 		## sort names
-		#all_names = all_names[ordr];
+		all_names = all_names[ordr];
 		##
 		## Make slices back
-		#nrows = length(all_rows);
-		#nSlices1 <<- as.integer((nrows+fileSliceSize-1)/fileSliceSize);
+		nrows = length(all_rows);
+		nSlices1 <<- as.integer((nrows+fileSliceSize-1)/fileSliceSize);
 		##cat(nrows, " ", nSlices1);
-		#rowNameSlices1 = vector("list", nSlices());
-		#for( i in 1:nSlices() ) {
-			#fr = 1 + fileSliceSize*(i-1);
-			#to = min( fileSliceSize*i, nrows);
-			## slice = unlist(allsnps[fr:to], recursive = FALSE, use.names = FALSE);
-			## dim(slice) = c( length(allsnps[[fr]]) , to - fr + 1);
-			## slice = t(slice);
-			#slice = t(.simplify2array(all_rows[fr:to], higher = TRUE));
-			#setSlice(i,slice);
-			#rowNameSlices1[[i]] = all_names[fr:to];
-			#all_rows[fr:to] = 0;
-			#all_names[fr:to] = 0;
-		#}
-		#rowNameSlices <<- rowNameSlices1;
-		#return(invisible(.self));
-	#},
+		rowNameSlices1 = vector("list", nSlices1);
+		for( i in 1:nSlices1 ) {
+			fr = 1 + fileSliceSize*(i-1);
+			to = min( fileSliceSize*i, nrows);
+
+			subset = all_rows[fr:to];
+			types = unlist(lapply(subset,typeof));
+			israw = (types == "raw")
+			if(!all(israw == israw[1])) {
+				# some raw and some are not
+				subset = lapply(subset, function(x){if(is.raw(x)){x=as.integer(x);x[x==255] = NA;return(x)}else{return(x)}});
+			}
+			subset = unlist(subset);
+			dim(subset) = c( length(all_rows[[fr]]) , to - fr + 1)
+			#subset = matrix(subset, ncol = (to-fr+1));
+			if(is.raw(subset)) {
+				setSliceRaw(i, t(subset)); 
+			} else {
+				setSlice(i, t(subset)); 
+			}
+			rowNameSlices1[[i]] = all_names[fr:to];
+			all_rows[fr:to] = 0;
+			all_names[fr:to] = 0;
+		}
+		rowNameSlices <<- rowNameSlices1;
+		gc();
+		return(invisible(.self));
+	},
 	RowRemoveZeroEps = function(){
 		if( nSlices() == 0 ) {
 			return(invisible(.self));
@@ -895,9 +909,9 @@ Matrix_eQTL_main = function(
 		stopifnot( "SlicedData" %in% class(cvrt) );
 		
 		# Check dimensions
-		if( snps$nRows()*snps$nCols() == 0 )
+		if( min(snps$nRows(),snps$nCols()) == 0 )
 			stop("Empty genotype dataset");
-		if( gene$nRows()*gene$nCols() == 0 )
+		if( min(gene$nRows(),gene$nCols()) == 0 )
 			stop("Empty expression dataset");
 		if( snps$nCols() != gene$nCols() )
 			stop("Different number of samples in the genotype and gene expression files");
@@ -905,7 +919,6 @@ Matrix_eQTL_main = function(
 			if( snps$nCols() != cvrt$nCols() )
 				stop("Wrong number of samples in the matrix of covariates");
 		}
-
 
 		stopifnot( class(pvOutputThreshold) == "numeric" );
 		stopifnot( length(pvOutputThreshold) == 1 );
