@@ -27,49 +27,37 @@
 
 \title{Class \code{SlicedData} for storing large matrices}
 \description{
-This class is created for fast and memory efficient manipulations
-with large datasets presented in matrix form.
-It is used to load, store, and manipulate large datasets, 
-e.g. genotype and gene expression matrices.
-When a dataset is loaded, it is sliced in blocks of 10,000 rows (default size).
-This allows to impute, standardize, and perform other operations with the data with minimal memory overhead.
+	This class is created for fast and memory efficient manipulations with large datasets presented in matrix form.
+	It is used to load, store, and manipulate large datasets, e.g. genotype and gene expression matrices.
+	When a dataset is loaded, it is sliced in blocks of 1,000 rows (default size).
+	This allows to impute, standardize, and perform other operations with the data with minimal memory overhead.
 }
 \section{Extends}{
-\code{SlicedData} is a reference classes (\code{\linkS4class{envRefClass}}).
-Its methods can change the values of the fields of the class.
+	\code{SlicedData} is a reference classes (\code{\linkS4class{envRefClass}}).
+	Its methods can change the values of the fields of the class.
 }
 \references{
-For more information visit:
-\url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
+	The package website: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
 }
 \author{
-Andrey Shabalin \email{shabalin@email.unc.edu}
+	Andrey Shabalin \email{ashabalin@vcu.edu}
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-This class is used to load data for eQTL analysis by \code{\link{Matrix_eQTL_engine}}.
+	This class is used to load data for eQTL analysis by \code{\link{Matrix_eQTL_engine}}.
 }
-\note{
-To run this example please obtain the sample data from
-\url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
-}
-
 \keyword{classes}
 \section{Fields}{
-  \describe{
-    \item{\code{dataEnv}:}{\code{environment}. Stores the slices of the data matrix. The slices should be accessed via \code{getSlice()} and \code{setSlice()} methods. }
-    \item{\code{nSlices1}:}{\code{numeric}. Number of slices. For internal use. The value should be access via \code{nSlices()} method. }
-    \item{\code{rowNameSlices}:}{\code{list}. Slices of row names. }
-    \item{\code{columnNames}:}{\code{character}. Column names. }
-
-    \item{\code{fileDelimiter}:}{\code{character}. Delimiter separating values in the input file. }
-    \item{\code{fileSkipColumns}:}{\code{numeric}. Number of columns with row labels in the input file. }
-    \item{\code{fileSkipRows}:}{\code{numeric}. Number of rows with column labels in the input file. }
-    \item{\code{fileSliceSize}:}{\code{numeric}. Maximum number of rows in a slice. }
-    \item{\code{fileOmitCharacters}:}{\code{character}. Missing value (NaN) representation in the input file. }
-  }
+	\describe{
+		\item{\code{dataEnv}:}{\code{environment}. Stores the slices of the data matrix. The slices should be accessed via \code{getSlice()} and \code{setSlice()} methods. }
+		\item{\code{nSlices1}:}{\code{numeric}. Number of slices. For internal use. The value should be access via \code{nSlices()} method. }
+		\item{\code{rowNameSlices}:}{\code{list}. Slices of row names. }
+		\item{\code{columnNames}:}{\code{character}. Column names. }
+		\item{\code{fileDelimiter}:}{\code{character}. Delimiter separating values in the input file. }
+		\item{\code{fileSkipColumns}:}{\code{numeric}. Number of columns with row labels in the input file. }
+		\item{\code{fileSkipRows}:}{\code{numeric}. Number of rows with column labels in the input file. }
+		\item{\code{fileSliceSize}:}{\code{numeric}. Maximum number of rows in a slice. }
+		\item{\code{fileOmitCharacters}:}{\code{character}. Missing value (NaN) representation in the input file. }
+	}
 }
 \section{Methods}{
 	\describe{
@@ -81,7 +69,7 @@ To run this example please obtain the sample data from
 		\item{\code{Clone()}:}{ Makes a copy of the object. Changes to the copy do not affect the source object. }
 		\item{\code{CreateFromMatrix(mat)}:}{ Creates \code{SlicedData} object from a \code{\link[base]{matrix}}.}
 		\item{\code{LoadFile(filename, skipRows = NULL, skipColumns = NULL,} \cr 
-			\code{sliceSize = NULL, omitCharacters = NULL, delimiter = NULL, rowNamesColumn = 1)}:}{ Loads date matrix from a file. \code{filename} should be a character string. The remaining parameters specify the file format and have the same meaning as \code{file*} fields. Additional \code{rowNamesColumn} parameter specifies which of the columns of row labels to use as row identifiers.}
+			\code{sliceSize = NULL, omitCharacters = NULL, delimiter = NULL, rowNamesColumn = 1)}:}{ Loads data matrix from a file. \code{filename} should be a character string. The remaining parameters specify the file format and have the same meaning as \code{file*} fields. Additional \code{rowNamesColumn} parameter specifies which of the columns of row labels to use as row names.}
 		\item{\code{SaveFile(filename)}:}{ Saves the data to a file. \code{filename} should be a character string.}
 		\item{\code{getSlice(sl)}:}{ Retrieves \code{sl}-th slice of the matrix. }
 		\item{\code{setSlice(sl, value)}:}{ Set \code{sl}-th slice of the matrix. }
@@ -130,15 +118,15 @@ Acts as \code{M = M \%*\% multiplier} for a matrix \code{M}. }
 \S4method{length}{SlicedData}(x)
 }
 \arguments{
-  \item{x}{
-	\code{\linkS4class{SlicedData}} object.
-}
-  \item{i}{
-	Number of a slice.
-}
-  \item{value}{
-	New content for the slice / new row or column names.
-}
+	\item{x}{
+		\code{\linkS4class{SlicedData}} object.
+	}
+	\item{i}{
+		Number of a slice.
+	}
+	\item{value}{
+		New content for the slice / new row or column names.
+	}
 }
 
 

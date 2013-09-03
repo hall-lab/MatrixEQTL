@@ -10,55 +10,54 @@ for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 \method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, ymin = NULL, ...)
 }
 \arguments{
-  \item{x}{
-An "\code{MatrixEQTL}" object produced by Matrix eQTL main function \code{\link{Matrix_eQTL_engine}}.
-}
-  \item{cex}{
-A numerical value giving the amount by which plotting text and symbols should be magnified relative to the default.
-}
-  \item{pch}{
-Plotting "character", i.e., symbol to use. See \code{\link[graphics]{points}}.
-}
-  \item{ymin}{
-Set the top of the range of the vertical axis.
-}
-
-
-  \item{\dots}{
-	further graphical parameters to \code{\link[graphics]{lines}} and \code{\link[graphics]{points}}.
-}
+	\item{x}{
+		An object returned by \code{\link{Matrix_eQTL_engine}}.
+	}
+	\item{cex}{
+		A numerical value giving the amount by which plotting text and symbols should be magnified relative to the default.
+	}
+	\item{pch}{
+		Plotting "character", i.e., symbol to use. See \code{\link[graphics]{points}}.
+	}
+	\item{ymin}{
+		Set the top of the range of the vertical axis.
+	}
+	\item{\dots}{
+		further graphical parameters passed to \code{\link[graphics]{lines}} and \code{\link[graphics]{points}}.
+	}
 }
 \details{
-	The plot type (histogram vs. Q-Q plot) is defined by the \code{pvalue.hist} parameter
-	in the call of \code{\link{Matrix_eQTL_engine}} function.
+	The plot type (histogram vs. Q-Q plot) is defined by the \code{pvalue.hist} parameter in the call of \code{\link{Matrix_eQTL_engine}} function.
 }
 \value{
 	The method does not return any value.
 }
 \references{
-The software website:
-\url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
+	The package website: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
+}
+\seealso{
+	See \code{\link{Matrix_eQTL_engine}} for reference and sample code.
 }
 \author{
-Andrey Shabalin \email{shabalin@email.unc.edu}
-}
-
-\seealso{
-\code{\link{Matrix_eQTL_main}}
+	Andrey Shabalin \email{ashabalin@vcu.edu}
 }
 \note{
-The sample code below produces figures like these:
-
-Histogram: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/histogram.png}
-
-Q-Q plot:  \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/QQplot.png}
+	The sample code below produces figures like these:
+	
+	Histogram: \figure{histogram.png}
+		
+	Q-Q plot: \figure{QQplot.png}
 }
 
 \examples{
+library(MatrixEQTL)
+
 # Number of samples
 n = 100; 
+
 # Number of variables
 ngs = 2000;
+
 # Common signal in all variables
 pop = 0.2*rnorm(n);
 

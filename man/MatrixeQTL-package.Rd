@@ -3,7 +3,7 @@
 \alias{MatrixEQTL}
 \docType{package}
 \title{
-Matrix eQTL: Ultra fast eQTL analysis via large matrix operations
+	Matrix eQTL: Ultra fast eQTL analysis via large matrix operations
 }
 \description{
 	Matrix eQTL is designed for fast eQTL analysis of large datasets.
@@ -14,28 +14,27 @@ Matrix eQTL: Ultra fast eQTL analysis via large matrix operations
 	false discovery rate estimation and separate treatment of local (cis) and distant (trans) eQTLs.
 }
 \details{
-\tabular{ll}{
-Package: \tab MatrixEQTL\cr
-Type: \tab Package\cr
-Version: \tab 1.6.2\cr
-Date: \tab 2012-02-14\cr
-License: \tab LGPL-3 \cr
-LazyLoad: \tab yes\cr
-Depends: \tab methods\cr
-}
+	\tabular{ll}{
+		Package: \tab MatrixEQTL\cr
+		Type: \tab Package\cr
+		Version: \tab 2.0.0\cr
+		Date: \tab 2013-09-03\cr
+		License: \tab LGPL-3 \cr
+		LazyLoad: \tab yes\cr
+		Depends: \tab methods\cr
+	}
 }
 \author{
-Andrey Shabalin \email{shabalin@email.unc.edu}
-
-Maintainer: Andrey Shabalin <shabalin@email.unc.edu>
+	Andrey Shabalin \email{ashabalin@vcu.edu}
+	
+	Maintainer: Andrey Shabalin <ashabalin@vcu.edu>
 }
 \references{
-The software website:
-\url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
+	The package website: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
 }
 \keyword{ package }
 \keyword{ MatrixEQTL }
 \keyword{ Matrix eQTL }
 \seealso{
-See \code{\link{Matrix_eQTL_engine}} for the description and sample code.
+	See \code{\link{Matrix_eQTL_engine}} for reference and sample code.
 }

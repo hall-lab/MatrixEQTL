@@ -1,4 +1,0 @@
-Version:
-
-DESCRIPTION
-man/MatrixEQTL-package.Rd
