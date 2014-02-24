@@ -1,3 +1,4 @@
+importFrom(methods, setRefClass)
 exportPattern("^[[:alpha:]]+")
 exportClasses(
     "SlicedData" 
@@ -17,7 +18,6 @@ exportMethods(
     "NROW",
     "rownames",
     "rownames<-",
-    "show",
     "as.matrix",
     "rowMeans",
     "rowSums",

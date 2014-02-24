@@ -3,16 +3,16 @@
 
 \title{Sample code for cis/trans-eQTL analysis with Matrix eQTL}
 \description{
-	The following code is the best starting point for those who want to perform cis-/trans-eQTL analysis with Matrix eQTL.
+  The following code is the best starting point for those who want to perform cis-/trans-eQTL analysis with Matrix eQTL.
 }
 \references{
-	The package website: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
+  The package website: \url{http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/}
 }
 \seealso{
-	See \code{\link{Matrix_eQTL_engine}} for reference and other sample code.
+  See \code{\link{Matrix_eQTL_engine}} for reference and other sample code.
 }
 \author{
-	Andrey Shabalin \email{ashabalin@vcu.edu}
+  Andrey Shabalin \email{ashabalin@vcu.edu}
 }
 \examples{
 # Matrix eQTL by Andrey A. Shabalin
@@ -87,7 +87,7 @@ cvrt$fileOmitCharacters = "NA"; # denote missing values;
 cvrt$fileSkipRows = 1;          # one row of column labels
 cvrt$fileSkipColumns = 1;       # one column of row labels
 if(length(covariates_file_name)>0) {
-	cvrt$LoadFile(covariates_file_name);
+  cvrt$LoadFile(covariates_file_name);
 }
 
 ## Run the analysis
@@ -95,22 +95,22 @@ snpspos = read.table(snps_location_file_name, header = TRUE, stringsAsFactors = 
 genepos = read.table(gene_location_file_name, header = TRUE, stringsAsFactors = FALSE);
 
 me = Matrix_eQTL_main(
-		snps = snps, 
-		gene = gene, 
-		cvrt = cvrt,
-		output_file_name      = output_file_name_tra,
-		pvOutputThreshold     = pvOutputThreshold_tra,
-		useModel = useModel, 
-		errorCovariance = errorCovariance, 
-		verbose = TRUE, 
-		output_file_name.cis  = output_file_name_cis,
-		pvOutputThreshold.cis = pvOutputThreshold_cis,
-		snpspos = snpspos, 
-		genepos = genepos,
-		cisDist = cisDist,
-		pvalue.hist = "qqplot",
-		min.pv.by.genesnp = FALSE,
-		noFDRsaveMemory = FALSE);
+    snps = snps, 
+    gene = gene, 
+    cvrt = cvrt,
+    output_file_name      = output_file_name_tra,
+    pvOutputThreshold     = pvOutputThreshold_tra,
+    useModel = useModel, 
+    errorCovariance = errorCovariance, 
+    verbose = TRUE, 
+    output_file_name.cis  = output_file_name_cis,
+    pvOutputThreshold.cis = pvOutputThreshold_cis,
+    snpspos = snpspos, 
+    genepos = genepos,
+    cisDist = cisDist,
+    pvalue.hist = "qqplot",
+    min.pv.by.genesnp = FALSE,
+    noFDRsaveMemory = FALSE);
 
 unlink(output_file_name_tra);
 unlink(output_file_name_cis);
@@ -123,7 +123,7 @@ show(me$cis$eqtls)
 cat('Detected distant eQTLs:', '\n');
 show(me$trans$eqtls)
 
-## Plot the Q-Q plot of local and distant p-values
+## Make the QQ-plot of local and distant p-values
 
 plot(me)
 }

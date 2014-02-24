@@ -28,7 +28,7 @@ cvrt.mat = 2 + matrix(rnorm(n*nc), ncol = nc);
 # Generate the vectors with single genotype and expression variables
 snps.mat = cvrt.mat \%*\% rnorm(nc) + rnorm(n);
 gene.mat = cvrt.mat \%*\% rnorm(nc) + rnorm(n) * noise.std + 
-						1 + 0.5 * snps.mat + snps.mat * cvrt.mat[,nc];
+           1 + 0.5 * snps.mat + snps.mat * cvrt.mat[,nc];
 
 # Create 3 SlicedData objects for the analysis
 snps1 = SlicedData$new( matrix( snps.mat, nrow = 1 ) );
@@ -40,15 +40,15 @@ filename = tempfile();
 
 # Call the main analysis function
 me = Matrix_eQTL_main(
-	snps = snps1, 
-	gene = gene1, 
-	cvrt = cvrt1, 
-	output_file_name = filename, 
-	pvOutputThreshold = 1, 
-	useModel = modelLINEAR_CROSS, 
-	errorCovariance = diag(noise.std^2), 
-	verbose = TRUE,
-	pvalue.hist = FALSE );
+  snps = snps1, 
+  gene = gene1, 
+  cvrt = cvrt1, 
+  output_file_name = filename, 
+  pvOutputThreshold = 1, 
+  useModel = modelLINEAR_CROSS, 
+  errorCovariance = diag(noise.std^2), 
+  verbose = TRUE,
+  pvalue.hist = FALSE );
 # remove the output file
 unlink( filename );
 
@@ -59,13 +59,13 @@ pvalue = me$all$eqtls$pvalue;
 rez = c(beta = beta, tstat = tstat, pvalue = pvalue)
 # And compare to those from the linear regression in R
 {
-	cat('\n\n Matrix eQTL: \n'); 
-	print(rez);
-	cat('\n R summary(lm()) output: \n')
-	lmodel = lm( gene.mat ~ snps.mat + cvrt.mat + snps.mat*cvrt.mat[,nc], 
-							 weights = 1/noise.std^2 );
-	lmout = tail(summary( lmodel )$coefficients,1)[,c(1,3,4)];
-	print( tail(lmout) );
+  cat('\n\n Matrix eQTL: \n'); 
+  print(rez);
+  cat('\n R summary(lm()) output: \n')
+  lmodel = lm( gene.mat ~ snps.mat + cvrt.mat + snps.mat*cvrt.mat[,nc], 
+               weights = 1/noise.std^2 );
+  lmout = tail(summary( lmodel )$coefficients,1)[,c(1,3,4)];
+  print( tail(lmout) );
 }
 
 # Results from Matrix eQTL and 'lm' must agree

@@ -107,6 +107,6 @@ show(me$cis$eqtls)
 cat('Detected distant eQTLs:', '\n');
 show(me$trans$eqtls)
 
-## Plot the Q-Q plot of local and distant p-values
+## Plot the QQ-plot of local and distant p-values
 
 plot(me)

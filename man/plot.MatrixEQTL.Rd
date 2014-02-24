@@ -1,13 +1,13 @@
 \name{plot.MatrixEQTL}
 \alias{plot.MatrixEQTL}
-\title{Plotting histogram or Q-Q plot of all p-values
+\title{Plot histogram or QQ-plot of all p-values
 }
 \description{
-This method plots a histogram or Q-Q plot of p-values
+This method plots a histogram or QQ-plot of p-values
 for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 }
 \usage{
-\method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, ymin = NULL, ...)
+\method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, xlim = NULL, ylim = NULL,...)
 }
 \arguments{
 	\item{x}{
@@ -19,15 +19,18 @@ for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 	\item{pch}{
 		Plotting "character", i.e., symbol to use. See \code{\link[graphics]{points}}.
 	}
-	\item{ymin}{
-		Set the top of the range of the vertical axis.
+	\item{xlim}{
+		Set the range of the horisontal axis.
+	}
+	\item{ylim}{
+		Set the range of the vertical axis.
 	}
 	\item{\dots}{
 		further graphical parameters passed to \code{\link[graphics]{lines}} and \code{\link[graphics]{points}}.
 	}
 }
 \details{
-	The plot type (histogram vs. Q-Q plot) is defined by the \code{pvalue.hist} parameter in the call of \code{\link{Matrix_eQTL_engine}} function.
+	The plot type (histogram vs. QQ-plot) is determined by the \code{pvalue.hist} parameter in the call of \code{\link{Matrix_eQTL_engine}} function.
 }
 \value{
 	The method does not return any value.
@@ -38,17 +41,16 @@ for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 \seealso{
 	See \code{\link{Matrix_eQTL_engine}} for reference and sample code.
 }
-\author{
-	Andrey Shabalin \email{ashabalin@vcu.edu}
-}
 \note{
 	The sample code below produces figures like these:
 	
 	Histogram: \figure{histogram.png}
 		
-	Q-Q plot: \figure{QQplot.png}
+	QQ-plot: \figure{QQplot.png}
 }
-
+\author{
+	Andrey Shabalin \email{ashabalin@vcu.edu}
+}
 \examples{
 library(MatrixEQTL)
 
@@ -75,11 +77,10 @@ rm(snps.mat, gene.mat)
 snps1$ResliceCombined(500);
 gene1$ResliceCombined(500);
 
-# name of temporary output file
-filename = tempfile();
+# Produce no output files
+filename = NULL; # tempfile()
 
-# Perform analysis recording information for 
-# a histogram
+# Perform analysis recording information for a histogram
 meh = Matrix_eQTL_engine(
     snps = snps1, 
     gene = gene1, 
@@ -90,11 +91,10 @@ meh = Matrix_eQTL_engine(
     errorCovariance = numeric(), 
     verbose = TRUE,
     pvalue.hist = 100);
-unlink( filename );
+    
 plot(meh, col="grey")
 
-# Perform analysis recording information for 
-# a Q-Q plot
+# Perform analysis recording information for a QQ-plot
 meq = Matrix_eQTL_engine(
     snps = snps1, 
     gene = gene1, 
@@ -105,8 +105,8 @@ meq = Matrix_eQTL_engine(
     errorCovariance = numeric(), 
     verbose = TRUE,
     pvalue.hist = "qqplot");
-unlink( filename );
+    
 plot(meq)
 }
-\keyword{ Q-Q plot }
+\keyword{ QQ-plot }
 \keyword{ histogram }

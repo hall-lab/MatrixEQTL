@@ -9,6 +9,8 @@ modelLINEAR = 117348L;
 modelANOVA  = 47074L;
 modelLINEAR_CROSS = 1113461L;
 
+.seq = function(a,b){if(a<=b){a:b}else{integer(0)}};
+
 SlicedData <- setRefClass( "SlicedData",
 	fields = list( 
 		dataEnv = "environment",
@@ -188,7 +190,7 @@ SlicedData <- setRefClass( "SlicedData",
 		},
 		SaveFile = function(filename) {
 			if( nSlices() == 0 ) {
-				warning("No data to save");
+				cat("No data to save");
 				return();
 			}
 			fid = file(filename,"wt");
@@ -202,15 +204,11 @@ SlicedData <- setRefClass( "SlicedData",
 			close(fid);
 		},
 		nRows = function() {
-			if( nSlices() == 0L ) {
-				return(0L);
-			} else {
-				s = 0L;
-				for(sl in 1:nSlices()) {
-					s = s + nrow(getSliceRaw(sl));
-				}
-				return( s )
+			s = 0L;
+			for(sl in .seq(1,nSlices())) {
+				s = s + nrow(getSliceRaw(sl));
 			}
+			return( s )
 		},
 		nCols = function() {
 			if( nSlices() == 0L ) {
@@ -220,10 +218,8 @@ SlicedData <- setRefClass( "SlicedData",
 			}
 		},
 		Clear = function() {
-			if( nSlices() > 0L ) {
-				for( sl in 1:nSlices() ) {
-					rm(list = paste(sl), envir = dataEnv)
-				}
+			for( sl in .seq(1,nSlices()) ) {
+				rm(list = paste(sl), envir = dataEnv)
 			}
 			nSlices1 <<- 0L;
 			rowNameSlices <<- list();
@@ -237,10 +233,10 @@ SlicedData <- setRefClass( "SlicedData",
 			return( c(rowNameSlices, recursive=TRUE) );
 		},
 		SetNanRowMean = function() {
-			if( (nSlices() == 0L) || (nCols() == 0L) ) {
+			if( (nCols() == 0L) ) {
 				return(invisible(.self));
 			}
-			for( sl in 1:nSlices() ) {
+			for( sl in .seq(1,nSlices()) ) {
 				slice = getSlice(sl);
 				if( any(is.na(slice)) ) {
 					rowmean = rowMeans(slice, na.rm = TRUE);
@@ -255,10 +251,7 @@ SlicedData <- setRefClass( "SlicedData",
 			return(invisible(.self));
 		},
 		RowStandardizeCentered = function() {
-			if( nSlices() == 0L ) {
-				return(invisible(.self));
-			}
-			for(sl in 1:nSlices()) {
+			for(sl in .seq(1,nSlices()) ) {
 				slice = getSlice(sl);
 				div = sqrt( rowSums(slice^2) );
 				div[ div == 0 ] = 1;
@@ -335,10 +328,8 @@ SlicedData <- setRefClass( "SlicedData",
 		},
 		Clone = function() {
 			clone = SlicedData$new();
-			if( nSlices() > 0L ) {
-				for(sl in 1:nSlices()) {
-					clone$setSliceRaw(sl,getSliceRaw(sl));
-				}
+			for(sl in .seq(1,nSlices()) ) {
+				clone$setSliceRaw(sl,getSliceRaw(sl));
 			}
 			clone$rowNameSlices = rowNameSlices;
 			clone$columnNames = columnNames;
@@ -350,19 +341,13 @@ SlicedData <- setRefClass( "SlicedData",
 			return( clone );		
 		},
 		RowMatrixMultiply = function(multiplier) {
-			if( nSlices() == 0L ) {
-				return(invisible(.self));
-			}
-			for(sl in 1:nSlices()) {
+			for(sl in .seq(1,nSlices()) ) {
 				setSlice(sl, getSlice(sl) %*% multiplier);
 			}
 			return(invisible(.self));
 		},
 		ColumnSubsample = function(subset) {
-			if( nSlices() == 0 ) {
-				return(invisible(.self));
-			}
-			for( sl in 1:nSlices() ) {
+			for(sl in .seq(1,nSlices()) ) {
 				setSliceRaw(sl, getSliceRaw(sl)[ ,subset, drop = FALSE]);
 			}
 			columnNames <<- columnNames[subset];
@@ -454,10 +439,7 @@ SlicedData <- setRefClass( "SlicedData",
 			return(invisible(.self));
 		},
 		RowRemoveZeroEps = function(){
-			if( nSlices() == 0 ) {
-				return(invisible(.self));
-			}
-			for(sl in 1:nSlices()) {
+			for(sl in .seq(1,nSlices()) ) {
 				slice = getSlice(sl);
 				amean = rowMeans(abs(slice));
 				remove = (amean < .Machine$double.eps*nCols());
@@ -469,7 +451,7 @@ SlicedData <- setRefClass( "SlicedData",
 			return(invisible(.self));
 		},
 		FindRow = function(rowname) {
-			for( sl in 1:nSlices() ) {
+			for(sl in .seq(1,nSlices()) ) {
 				mch = match(rowname,rowNameSlices[[sl]], nomatch = 0);
 				if( mch > 0 )
 				{
@@ -480,6 +462,22 @@ SlicedData <- setRefClass( "SlicedData",
 				}
 			}
 			return( NULL );
+		},
+		show = function() {
+			cat("SlicedData object. For more information type: ?SlicedData\n");
+			cat("Number of columns:", nCols(), "\n");
+			cat("Number of rows:", nRows(), "\n");
+			cat("Data is stored in", nSlices(), "slices\n");
+			if(nCols()>0) {
+				z = getSlice(1L);
+				if(nrow(z)>0) {
+					z = z[1:min(nrow(z),10L), 1:min(ncol(z),10L), drop = FALSE];
+					rownames(z) = rowNameSlices[[1]][1:nrow(z)];
+					colnames(z) = columnNames[1:ncol(z)];
+					cat("Top left corner of the first slice (up to 10x10):\n");
+					methods:::show(z)
+				}
+			}		
 		}
 	))
 
@@ -533,22 +531,22 @@ summary.SlicedData = function(object, ...) {
 #		return(z);
 #	})
 #setGeneric("show", standardGeneric("show"))
-setMethod("show", "SlicedData",	function(object) {
-		cat("SlicedData object. For more information type: ?SlicedData\n");
-		cat("Number of columns:", object$nCols(), "\n");
-		cat("Number of rows:", object$nRows(), "\n");
-		cat("Data is stored in", object$nSlices(), "slices\n");
-		if(object$nSlices()>0) {
-			z = object$getSlice(1);
-			if(nrow(z)>0) {
-				z = z[1:min(nrow(z),10), 1:min(ncol(z),10), drop = FALSE];
-				rownames(z) = object$rowNameSlices[[1]][1:nrow(z)];
-				colnames(z) = object$columnNames[1:ncol(z)];
-				cat("Top left corner of the first slice (up to 10x10):\n");
-				show(z)
-			}
-		}		
-	})
+# setMethod("show", "SlicedData",	function(object) {
+# 		cat("SlicedData object. For more information type: ?SlicedData\n");
+# 		cat("Number of columns:", object$nCols(), "\n");
+# 		cat("Number of rows:", object$nRows(), "\n");
+# 		cat("Data is stored in", object$nSlices(), "slices\n");
+# 		if(object$nSlices()>0) {
+# 			z = object$getSlice(1);
+# 			if(nrow(z)>0) {
+# 				z = z[1:min(nrow(z),10), 1:min(ncol(z),10), drop = FALSE];
+# 				rownames(z) = object$rowNameSlices[[1]][1:nrow(z)];
+# 				colnames(z) = object$columnNames[1:ncol(z)];
+# 				cat("Top left corner of the first slice (up to 10x10):\n");
+# 				show(z)
+# 			}
+# 		}		
+# 	})
 
 setGeneric("as.matrix")
 setMethod("as.matrix", "SlicedData", function(x) {
@@ -579,7 +577,7 @@ setMethod("rownames<-", "SlicedData", function(x,value) {
 		stopifnot( length(value) == x$nRows() );
 		start = 1;
 		newNameSlices = vector("list", x$nSlices());
-		for( i in 1:x$nSlices() ) {
+		for( i in .seq(1,x$nSlices()) ) {
 			nr = nrow(x$getSliceRaw(i));
 			newNameSlices[[i]] = value[ start:(start+nr-1) ];
 			start = start + nr;
@@ -613,25 +611,25 @@ setMethod("rowMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 	})
 setGeneric("colSums")
 setMethod("colSums", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
-		if(x$nSlices() == 0) {
+		if(x$nCols() == 0) {
 			return( numeric() );
 		}
 		stopifnot( dims == 1 );
 		thesum = 0;
-		for( i in 1:x$nSlices() ) {
+		for( i in .seq(1,x$nSlices()) ) {
 			thesum = thesum + colSums(x$getSlice(i), na.rm)
 		}
 		return(thesum);
 	})
 setGeneric("colMeans")
 setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
-		if(x$nSlices() == 0) {
+		if(x$nCols() == 0) {
 			return( numeric() );
 		}
 		stopifnot( dims == 1 );
 		thesum = 0;
 		thecounts = x$nRows();
-		for( i in 1:x$nSlices() ) {
+		for( i in .seq(1,x$nSlices()) ) {
 			slice = x$getSlice(i);
 			thesum = thesum + colSums(slice, na.rm)
 			if( na.rm ) {
@@ -682,12 +680,12 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 		},
 		unlist = function() {
 			return(base::unlist(.self$list(), recursive=FALSE, use.names = FALSE));
+		},
+		show = function() {
+			cat(".listBuilder object.\nIternal object in MatrixEQTL package.\n");
+			cat("Number of elements:", object$n, "\n");
 		}
 	))
-# setMethod("show", ".listBuilder",	function(object) {
-# 		cat(".listBuilder object.\nIternal object in MatrixEQTL package.\n");
-# 		cat("Number of elements:", object$n, "\n");
-# 	})
 
 .histogrammer <- setRefClass(".histogrammer",
 	fields = list(
@@ -798,8 +796,16 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 		start = function(filename, statistic_name, unused1, unused2, testfun, pvfun) {
 			testfun1 <<- list(testfun);
 			pvfun1 <<- list(pvfun);
-			fid <<- list(file(description = filename, open = "wt", blocking = FALSE, raw = FALSE));
-			writeLines( paste("SNP\tgene\t",statistic_name,"\tp-value\tFDR", sep = ""), fid[[1]]);
+			if(length(filename) > 0) {
+				if(class(filename) == "character") {
+					fid <<- list(file(description = filename, open = "wt", blocking = FALSE, raw = FALSE), TRUE);
+				} else {
+					fid <<- list(filename, FALSE)
+				}
+				writeLines( paste("SNP\tgene\t",statistic_name,"\tp-value\tFDR", sep = ""), fid[[1]]);
+			} else {
+				fid <<- list();
+			}
 		},
 		update = function(spos, gpos, sta, beta = NULL) {
 			if(length(sta)>0) {
@@ -835,27 +841,33 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
  				beta = NULL;
  				if(bdata$n > 0)
  					beta = bdata$unlist()[ord];
- 				
-				step = 1000; ########### 100000
-				for( part in 1:ceiling(length(FDR)/step) ) {
- 					fr = (part-1)*step + 1;
- 					to = min(part*step, length(FDR));
-					dump = data.frame(snps_names[fr:to],
-														gene_names[fr:to],
-														if(is.null(beta)) tests[fr:to] else list(beta[fr:to],tests[fr:to]),
-														pvalues[fr:to],
-														FDR[fr:to], 
-														row.names = NULL, 
-														check.rows = FALSE, 
-														check.names = FALSE, 
-														stringsAsFactors = FALSE);
-					write.table(dump, file = fid[[1]], quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE);
+				
+ 				if(length(fid)>0)	{	
+					step = 1000; ########### 100000
+					for( part in 1:ceiling(length(FDR)/step) ) {
+	 					fr = (part-1)*step + 1;
+	 					to = min(part*step, length(FDR));
+						dump = data.frame(snps_names[fr:to],
+															gene_names[fr:to],
+															if(is.null(beta)) tests[fr:to] else list(beta[fr:to],tests[fr:to]),
+															pvalues[fr:to],
+															FDR[fr:to], 
+															row.names = NULL, 
+															check.rows = FALSE, 
+															check.names = FALSE, 
+															stringsAsFactors = FALSE);
+						write.table(dump, file = fid[[1]], quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE);
+					}
  				}
 			} else {
-				cat("No significant associations were found.\n", file = fid[[1]]);
+				cat("No significant associations were found.\n", file = if(length(fid)>0){fid[[1]]}else{""});
 			}
-			close(fid[[1]]);
- 			fid <<- list();
+			if(length(fid)>0)	{	
+				if(fid[[2]]) {
+					close(fid[[1]]);
+				}
+	 			fid <<- list();
+			}
  			
  			if(!is.null(pvalues)) {
  				eqtls = list( snps = snps_names,
@@ -898,7 +910,11 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 		},
 		start = function(filename, statistic_name, snps, gene, testfun, pvfun) {
 			# I hope the program stops if it fails to open the file
-			fid <<- list(file(description = filename, open = "wt", blocking = FALSE, raw = FALSE));
+			if(class(filename) == "character") {
+				fid <<- list(file(description = filename, open = "wt", blocking = FALSE, raw = FALSE), TRUE);
+			} else {
+				fid <<- list(filename, FALSE)
+			}
 			writeLines(paste("SNP\tgene\t", statistic_name, "\tp-value", sep = ""), fid[[1]]);
 			gene_names <<- gene$GetAllRowNames();
 			snps_names <<- snps$GetAllRowNames();
@@ -916,8 +932,12 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 			write.table(dump2, file = fid[[1]], quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE);
 		},
 		getResults = function(...) {
-			close(fid[[1]]);
-			fid <<- list();
+			if(length(fid)>0)	{	
+				if(fid[[2]]) {
+					close(fid[[1]]);
+				}
+				fid <<- list();
+			}
 			gene_names <<- character(0);
 			snps_names <<- character(0);
  			return(list());
@@ -945,12 +965,6 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 
 .pv.nz = function(x){return( .my.pmax(x,.Machine$double.xmin) )}
  
-# .RowStandardizeCentered = function(x) {
-# 	div = sqrt( rowSums(x^2) );
-# 	div[ div == 0 ] = 1;
-# 	return( x/div );
-# }
-
 .SetNanRowMean = function(x) {
 	if( any(is.na(x)) ) {
 		rowmean = rowMeans(x, na.rm = TRUE);
@@ -963,40 +977,80 @@ setMethod("colMeans", "SlicedData", function(x, na.rm = FALSE, dims = 1L) {
 	return(x);
 }
 
-.SNP_process_split_for_ANOVA = function(x) {
-		# split into 2 dummy variables
+# .SNP_process_split_for_ANOVA = function(x) {
+# 		# split into 2 dummy variables
+# 
+# 		uniq = unique(c(x));
+# 		uniq = uniq[!is.na(uniq)];
+# 		
+# 		if( length(uniq) > 3 ) {
+# 			stop("More than three genotype categories is not handled by ANOVA");
+# 		} else if ( length(uniq) < 3 ) {
+# 			uniq = c(uniq, min(uniq)-(1:(3-length(uniq))));
+# 		}
+# 		
+# 		freq = matrix(0, nrow(x), length(uniq));
+# 		for(i in 1:length(uniq)) {
+# 			freq[ ,i] = rowSums(x==uniq[i], na.rm = TRUE);
+# 		}
+# 		
+# 		md = apply(freq, 1, which.max);
+# 		freq[ cbind(1:nrow(x),md) ] = -1;
+# 		
+# 		md = apply(freq, 1, which.max); # min(freq[cbind(1:nrow(slice),md)] - rowSums(select,na.rm = TRUE ))
+# 		new_slice1 = (x == uniq[md]);
+# 		new_slice1[is.na(new_slice1)] = 0;
+# 		freq[ cbind(1:nrow(x),md) ] = -1;
+# 				
+# 		md = apply(freq,1,which.max);
+# 		new_slice2 = (x == uniq[md]);
+# 		new_slice2[ is.na(new_slice2) ] = 0;
+# 		rez = vector("list", 2);
+# 		rez[[1]] = new_slice1;
+# 		rez[[2]] = new_slice2;
+# 		return( rez );
+# }
 
-		uniq = unique(c(x));
-		uniq = uniq[!is.na(uniq)];
-		
-		if( length(uniq) > 3 ) {
-			stop("More than three genotype categories is not handled by ANOVA");
-		} else if ( length(uniq) < 3 ) {
-			uniq = c(uniq, min(uniq)-(1:(3-length(uniq))));
-		}
-		
-		freq = matrix(0, nrow(x), length(uniq));
-		for(i in 1:length(uniq)) {
-			freq[ ,i] = rowSums(x==uniq[i], na.rm = TRUE);
-		}
-		
-		md = apply(freq, 1, which.max);
+.SNP_process_split_for_ANOVA = function(x,n.groups) {
+	# split into 2 dummy variables (or more)
+	
+# 	# Get the number of ANOVA groups
+# 	n.groups = options('MatrixEQTL.ANOVA.categories')[[1]];
+# 	if( is.null(n.groups))
+# 		n.groups = 3;
+	
+	# Unique values in x (make sure it has length of n.groups);
+	uniq = unique(as.vector(x));
+	uniq = uniq[!is.na(uniq)];
+	if( length(uniq) > n.groups ) {
+		stop("More than declared number of genotype categories is detected by ANOVA");
+	} else if ( length(uniq) < n.groups ) {
+		uniq = c(uniq, rep(min(uniq)-1, n.groups-length(uniq)));
+	}
+	
+	# Table of frequencies for each variable (row)
+	freq = matrix(0, nrow(x), n.groups);
+	for(i in 1:n.groups) {
+		freq[ ,i] = rowSums(x==uniq[i], na.rm = TRUE);
+	}
+	# remove NA's from x for convenience
+	x[is.na(x)] = min(uniq)-2;
+	
+	# Output list of matrices
+	rez = vector('list',n.groups-1);
+
+	# Skip the most frequent value
+	md = apply(freq, 1, which.max); # most frequent value for each variable
+	freq[ cbind(1:nrow(x),md) ] = -1;
+	
+	# The rest form dumm
+	for(j in 1:(n.groups-1)){
+		md = apply(freq, 1, which.max); 
 		freq[ cbind(1:nrow(x),md) ] = -1;
-		
-		md = apply(freq, 1, which.max); # min(freq[cbind(1:nrow(slice),md)] - rowSums(select,na.rm = TRUE ))
-		new_slice1 = (x == uniq[md]);
-		new_slice1[is.na(new_slice1)] = 0;
-		freq[ cbind(1:nrow(x),md) ] = -1;
-				
-		md = apply(freq,1,which.max);
-		new_slice2 = (x == uniq[md]);
-		new_slice2[ is.na(new_slice2) ] = 0;
-		rez = vector("list", 2);
-		rez[[1]] = new_slice1;
-		rez[[2]] = new_slice2;
-		return( rez );
+		rez[[j]] = (x == uniq[md]);
+	}			
+	return( rez );
 }
-
 
 Matrix_eQTL_engine = function(
 						snps, 
@@ -1065,23 +1119,45 @@ Matrix_eQTL_main = function(
 		stopifnot( length(pvOutputThreshold) == 1 );
 		stopifnot( pvOutputThreshold >= 0 );
 		stopifnot( pvOutputThreshold <= 1 );
+
+		stopifnot(  class(noFDRsaveMemory) == "logical" );
+		stopifnot( length(noFDRsaveMemory) == 1 );
+
 		if( pvOutputThreshold > 0 ) {
-			stopifnot( class(output_file_name) == "character" );
-			stopifnot( length(output_file_name) == 1 );
+			stopifnot( !((length(output_file_name) == 0) && noFDRsaveMemory) )
+			stopifnot( length(output_file_name) <= 1 );
+			if( length(output_file_name) == 1 ) {
+				stopifnot( class(output_file_name) %in% c("character","connection") );
+			}
 		}
+		
 		stopifnot( class(pvOutputThreshold.cis) == "numeric" );
 		stopifnot( length(pvOutputThreshold.cis) == 1 );
 		stopifnot( pvOutputThreshold.cis >= 0 );
 		stopifnot( pvOutputThreshold.cis <= 1 );
 		stopifnot( !((pvOutputThreshold > 0) & (pvOutputThreshold.cis > 0) & (pvOutputThreshold > pvOutputThreshold.cis)) );
 		stopifnot( (pvOutputThreshold > 0) | (pvOutputThreshold.cis > 0) );
-		
+
 		stopifnot( class(useModel) == class(modelLINEAR) );
 		stopifnot( length(useModel) == 1 );
 		stopifnot( useModel %in% c(modelLINEAR, modelANOVA, modelLINEAR_CROSS) );
+		if( useModel %in%  c(modelLINEAR, modelLINEAR_CROSS) ) {
+			if( snps$nCols() <= cvrt$nRows() + 1 + 1) {
+				stop('The number of covariates exceeds the number of samples.\nLinear regression can not be fit.')
+			}
+		}
 		if( useModel == modelLINEAR_CROSS ) {
 			if( cvrt$nRows() == 0 ) {
 				stop( "Model \"modelLINEAR_CROSS\" requires at least one covariate" );
+			}
+		}
+		if( useModel == modelANOVA ) {
+			n.anova.groups = getOption('MatrixEQTL.ANOVA.categories', 3);
+			stopifnot( n.anova.groups == floor(n.anova.groups) );
+			stopifnot( n.anova.groups >= 3 );
+# 			stopifnot( n.anova.groups < snps$nCols() - cvrt$nRows() - 2 );
+			if( snps$nCols() <= cvrt$nRows() + n.anova.groups) {
+				stop('The number of covariates exceeds the number of samples.\nLinear regression (ANOVA) can not be fit.')
 			}
 		}
 		
@@ -1090,13 +1166,16 @@ Matrix_eQTL_main = function(
 
 		stopifnot(  class(min.pv.by.genesnp) == "logical" );
 		stopifnot( length(min.pv.by.genesnp) == 1 );
-
-		stopifnot(  class(noFDRsaveMemory) == "logical" );
-		stopifnot( length(noFDRsaveMemory) == 1 );
-		
+	
 		if( pvOutputThreshold.cis > 0 ) {
-			stopifnot( class(output_file_name.cis) == "character" );
-			stopifnot( length(output_file_name.cis) == 1 );
+			stopifnot( !((length(output_file_name.cis) == 0) && noFDRsaveMemory) )
+			stopifnot( length(output_file_name.cis) <= 1 );
+			if( length(output_file_name.cis) == 1 ) {
+				stopifnot( class(output_file_name.cis) %in% c("character","connection") );
+			}
+
+# 			stopifnot( class(output_file_name.cis) == "character" );
+# 			stopifnot( length(output_file_name.cis) == 1 );
 			stopifnot( class(snpspos) == "data.frame" );
 			stopifnot( ncol(snpspos) == 3 );
 			stopifnot( nrow(snpspos) > 0 );
@@ -1111,6 +1190,7 @@ Matrix_eQTL_main = function(
 			stopifnot( !any(is.na(genepos[,4])) )
 			stopifnot( nzchar(output_file_name.cis) )
 		}
+		
 		if( pvOutputThreshold > 0 ) {
 			stopifnot( nzchar(output_file_name) )
 		}
@@ -1134,7 +1214,12 @@ Matrix_eQTL_main = function(
 		gene.std = .listBuilder$new();
 		snps.std = .listBuilder$new();
 		
-		gene = gene$Clone();
+		dont.clone.gene = getOption('MatrixEQTL.dont.preserve.gene.object', FALSE)
+		if(is.null(dont.clone.gene))
+			dont.clone.gene = FALSE;
+		
+		if( !dont.clone.gene )
+			gene = gene$Clone();
 		# snps = snps$Clone(); # snps is read only
 		cvrt = cvrt$Clone();
 
@@ -1190,10 +1275,12 @@ Matrix_eQTL_main = function(
 	################################# Matching gene and SNPs locations ######################
 	if( pvOutputThreshold.cis > 0 ) {
 		status("Matching data files and location files")
+		
 		# names in the input data	
 		gene_names = gene$GetAllRowNames();
 		snps_names = snps$GetAllRowNames();
 		
+		# gene range, set: left<right
 		if(any(genepos[,3] > genepos[,4])) {
 			temp3 = genepos[,3];
 			temp4 = genepos[,4];
@@ -1203,16 +1290,17 @@ Matrix_eQTL_main = function(
 		}
 		
 		# match with the location data
-		usedgene = matrix(FALSE, nrow(genepos),1); # genes in "genepos" that are matching  "gene_names"
 		genematch = match( gene_names, genepos[ ,1],  nomatch = 0L);
+		usedgene = matrix(FALSE, nrow(genepos), 1); # genes in "genepos" that are matching  "gene_names"
 		usedgene[ genematch ] = TRUE;
 		if( !any(genematch) ) {
 			stop("Gene names do not match those in the gene location file.");
 		}
 		cat( sum(genematch>0), "of", length(gene_names), " genes matched\n");
 		
-		usedsnps = matrix(FALSE, nrow(snpspos),1);
+		
 		snpsmatch = match( snps_names, snpspos[ ,1],  nomatch = 0L);
+		usedsnps = matrix(FALSE, nrow(snpspos),1);
 		usedsnps[ snpsmatch ] = TRUE;
 		if( !any(snpsmatch) ) {
 			stop("SNP names do not match those in the SNP location file.");
@@ -1220,8 +1308,10 @@ Matrix_eQTL_main = function(
 		cat( sum(snpsmatch>0), "of", length(snps_names), " SNPs matched\n");
 		
 		# list used chr names
-		chrNames = unique(c( as.character(unique(snpspos[usedsnps,2])), as.character(unique(genepos[usedgene,2])) ))
-		chrNames = chrNames[ sort.list( suppressWarnings(as.integer(chrNames)), method = "radix", na.last = TRUE ) ];
+		chrNames = unique(c( as.character(unique(snpspos[usedsnps,2])), 
+												 as.character(unique(genepos[usedgene,2])) ))
+		chrNames = chrNames[ sort.list( suppressWarnings(as.integer(chrNames)), 
+																		method = "radix", na.last = TRUE ) ];
 		# match chr names
 		genechr = match(genepos[,2],chrNames);
 		snpschr = match(snpspos[,2],chrNames);
@@ -1318,8 +1408,10 @@ Matrix_eQTL_main = function(
 		}
 		# Orthogonolize expression w.r.t. covariates
 		# status("Orthogonolizing expression w.r.t. covariates");
+		gene_offsets = double(gene$nSlices()+1);
 		for( sl in 1:gene$nSlices() ) {
 			slice = gene$getSlice(sl);
+			gene_offsets[sl+1] = gene_offsets[sl] + nrow(slice);
 			rowsq1 = rowSums(slice^2);
 			slice = slice - tcrossprod(slice,cvrt) %*% cvrt;
 			rowsq2 = rowSums(slice^2);
@@ -1328,7 +1420,7 @@ Matrix_eQTL_main = function(
 			slice[delete.rows] = 0;
 			div = sqrt( rowSums(slice^2) );
 			div[ div == 0 ] = 1;
-			gene.std$set(sl, div[!delete.rows]);
+			gene.std$set(sl, div);
 			gene$setSlice(sl, slice / div);
 		}
 		rm(rowsq1, rowsq2, delete.rows, div);
@@ -1380,11 +1472,17 @@ Matrix_eQTL_main = function(
 			}
 		} else 
 		if( useModel == modelANOVA ) {
-			snps_process = .SNP_process_split_for_ANOVA;
-			nVarTested = 2;
+			snps_process = function(x).SNP_process_split_for_ANOVA(x,n.anova.groups);
+			nVarTested = n.anova.groups - 1;
 			dfFull = nSamples - nCov - nVarTested;
+# 			statistic.fun = function(mat_list) {
+# 				return( mat_list[[1]]^2 + mat_list[[2]]^2 );
+# 			}
 			statistic.fun = function(mat_list) {
-				return( mat_list[[1]]^2 + mat_list[[2]]^2 );
+				x = mat_list[[1]]^2;
+				for( j in 2:length(mat_list) )
+					x = x + mat_list[[j]]^2;
+				return( x );
 			}
 			afun = identity;
 			threshfun = function(pv) {
@@ -1452,14 +1550,15 @@ Matrix_eQTL_main = function(
 		if( pvOutputThreshold > 0 )
 			if( pvOutputThreshold * gene$nRows() * snps$nRows() > 1000000 )
 				if(!noFDRsaveMemory)
-					cat('Warning: pvOutputThreshold may be too large.\nExpected number of findings > ', pvOutputThreshold * gene$nRows() * snps$nRows(),'\n');
+					cat('Warning: pvOutputThreshold may be too large.\nExpected number of findings > ', 
+							pvOutputThreshold * gene$nRows() * snps$nRows(),'\n');
 		if( (useModel == modelLINEAR) || (useModel == modelLINEAR_CROSS) ) {
 			statistic_name = "t-stat";
 		} else if( useModel == modelANOVA ) {
 			statistic_name = "F-test";
 		}
 		if(!is.null(betafun))
-			statistic_name = paste('beta\t',statistic_name);
+			statistic_name = paste('beta\t',statistic_name, sep='');
 		if( pvOutputThreshold > 0 )
 			saver.tra$start(output_file_name,     statistic_name, snps, gene, testfun, pvfun);
 		if( pvOutputThreshold.cis > 0 )
@@ -1474,10 +1573,8 @@ Matrix_eQTL_main = function(
 					cursnps[[p]] = cursnps[[p]] %*% correctionMatrix;
 				}
 				cursnps[[p]] = cursnps[[p]] - tcrossprod(cursnps[[p]],cvrt) %*% cvrt;
-				if( p>1 ) {
-					for(w in 1:(p-1))
-						cursnps[[p]] = cursnps[[p]] - rowSums(cursnps[[p]]*cursnps[[w]]) * cursnps[[w]]
-				}
+				for(w in .seq(1,p-1L))
+					cursnps[[p]] = cursnps[[p]] - rowSums(cursnps[[p]]*cursnps[[w]]) * cursnps[[w]];
 				div = sqrt( rowSums(cursnps[[p]]^2) );
 				div[ div == 0 ] = 1;
 				cursnps[[p]] = cursnps[[p]]/div;
@@ -1485,12 +1582,28 @@ Matrix_eQTL_main = function(
 			snps.std$set(ss, div);
 			return(cursnps);
 		}
-		if( pvOutputThreshold.cis > 0 ) {
-			is.cis.pair = function(gg,ss) {
-				return(!( ( snpsloc[[ss]][1, 1] - tail( geneloc[[gg]][ , 2], n = 1L) > cisDist) |
-					    ( geneloc[[gg]][1, 1] - tail( snpsloc[[ss]]      , n = 1L) > cisDist) ) );
-			}
-		}
+# 		if( pvOutputThreshold.cis > 0 ) {
+# 			is.cis.pair = function(gg,ss) {
+# 				return(!( ( snpsloc[[ss]][1, 1] - tail( geneloc[[gg]][ , 2], n = 1L) > cisDist) |
+# 					    ( geneloc[[gg]][1, 1] - tail( snpsloc[[ss]]      , n = 1L) > cisDist) ) );
+# 			}
+# 		}
+ 		if( pvOutputThreshold.cis > 0 ) {
+# 			sn.l = sapply(snpsloc, function(x)x[1] );
+# 			sn.r = sapply(snpsloc, function(x)tail(x,1) );
+# 			ge.l = sapply(geneloc, function(x)x[1,1] );
+# 			ge.r = sapply(geneloc, function(x)x[nrow(x) , 2] );
+			sn.l = sapply(snpsloc, '[', 1 );
+			sn.r = sapply(snpsloc, tail, 1 );
+			ge.l = sapply(geneloc, '[', 1, 1 );
+			ge.r = sapply( lapply(geneloc, tail.matrix, 1 ), '[', 2);
+			gg.1 = findInterval( sn.l , ge.r + cisDist +1) + 1;
+# 			cat(gg.1,'\n')
+			gg.2 = findInterval( sn.r , ge.l - cisDist );
+# 			cat(gg.2,'\n')
+			rm(sn.l, sn.r, ge.l, ge.r);
+ 		}
+
 	}	
 	################################# Prepare counters and histogram bins ###################
 	{
@@ -1499,11 +1612,7 @@ Matrix_eQTL_main = function(
 		do.hist = FALSE;
 		if( length(pvalue.hist) == 1 ) {
 			if(pvalue.hist == "qqplot") {
-				lowlim = c(pvOutputThreshold,pvOutputThreshold.cis);
-				lowlim = lowlim[lowlim >0];
-				lowlim = min(lowlim);
-				pvbins = c(0, 10^rev(seq(0, log10(lowlim)-1, -0.05)));
-				rm(lowlim);
+				pvbins = c(0, 10^rev(seq(0, log10(.Machine$double.xmin)-1, -0.05)));
 			} else
 			if( is.numeric(pvalue.hist) ) {
 				pvbins = seq(from = 0, to = 1, length.out = pvalue.hist+1);
@@ -1557,8 +1666,9 @@ Matrix_eQTL_main = function(
 			cursnps = NULL;
 			nrcs = nrow(snps$getSliceRaw(ss));
 			
-			gene_offset = 0;
-			for(gg in 1:gene$nSlices()) {
+			# loop only through the useful stuff
+			for(gg in if(pvOutputThreshold>0){1:gene$nSlices()}else{.seq(gg.1[ss],gg.2[ss])} ) {
+				gene_offset = gene_offsets[gg];
 				curgene = gene$getSlice(gg);
 				nrcg = nrow(curgene);
 				if(nrcg == 0) next;
@@ -1568,7 +1678,9 @@ Matrix_eQTL_main = function(
 				statistic = NULL;
 				select.cis.raw = NULL;
 				## do cis analysis
-				if( (pvOutputThreshold.cis > 0) && ( is.cis.pair(gg, ss) ) ) {
+# 				if( (pvOutputThreshold.cis > 0) && ( is.cis.pair(gg, ss) ) ) {
+				if( (pvOutputThreshold.cis > 0) && (gg >= gg.1[ss]) && (gg <= gg.2[ss]) ) {
+					
 					if( is.null( statistic ) ) {
 						if( is.null( cursnps ) ) {
 							cursnps = orthonormalize.snps( snps_process( snps$getSlice(ss) ), ss );
@@ -1666,12 +1778,12 @@ Matrix_eQTL_main = function(
 					rp = paste(rp, ", ", formatC(n.eqtls.tra, big.mark=",", format = "f", digits = 0), if(pvOutputThreshold.cis > 0)" trans-"else" ","eQTLs", sep = "")
 				}
 	
-				gene_offset = gene_offset + nrcg;
-				per = 100*(gg/gene$nSlices() + ss-1) / snps$nSlices();
+				#gene_offset = gene_offset + nrcg;
 				if( !is.null(statistic) ) {
+					per = 100*(gg/gene$nSlices() + ss-1) / snps$nSlices();
 					cat( formatC(floor(per*100)/100, format = "f", width = 5, digits = 2), "% done" , rp, "\n", sep = "");
+	 				flush.console();
 				}
-				flush.console();
 			} # gg in 1:gene$nSlices()
 			snps_offset = snps_offset + nrow(snps$getSliceRaw(ss));
 		} # ss in 1:snps$nSlices()
@@ -1721,7 +1833,7 @@ Matrix_eQTL_main = function(
 		if(exists('rez.cis')>0)
 			rez$cis = rez.cis;	
 		
-		class(rez) = "MatrixEQTL";
+		class(rez) = c(class(rez),"MatrixEQTL");
 		status("");
 	}
 # 	cat('s std ',snps.std$get(1),'\n');
@@ -1748,52 +1860,65 @@ Matrix_eQTL_main = function(
 	cnts = m$hist.counts;
 	bins = m$hist.bins;
 	ntst = m$ntests;
-	ypvs = m$eqtls$pvalue;
-	xpvs = if(length(ypvs)>0) {1:length(ypvs) / ntst;} else {numeric();}
-
-	if(length(ypvs) > 1000) {
-		# need to filter a bit, make the plotting faster
-		levels = log(xpvs);
-		levels = (levels - levels[1])/(tail(levels,1) - levels[1]);
-		levels = floor(levels *2000);
-		keep = c(TRUE, levels[-1] != levels[-length(levels)]);
-		ypvs = ypvs[keep];
-		xpvs = xpvs[keep];
-	}
+	
 	cusu = cumsum(cnts) / ntst;
 	ypos = bins[-1][is.finite(cusu)];
 	xpos = cusu[is.finite(cusu)];
+	lines(-log10(xpos), -log10(ypos), col = lcol, ...);
+# 	lines(xpos, ypos, col = lcol, ...);
+	if(length(m$eqtls$pvalue)==0)
+		return();
+	ypvs = -log10(m$eqtls$pvalue);
+	xpvs = -log10(1:length(ypvs) / ntst);
+	if(length(ypvs) > 1000) {
+		# need to filter a bit, make the plotting faster
+		levels = as.integer( xpvs/xpvs[1] * 1e3);
+		keep = c(TRUE, diff(levels)!=0);
+		levels = as.integer( ypvs/ypvs[1] * 1e3);
+		keep = keep | c(TRUE, diff(levels)!=0);
+		ypvs = ypvs[keep];
+		xpvs = xpvs[keep];
+		rm(keep)
+	}
 	points(xpvs, ypvs, col = lcol, pch = pch, cex = cex, ...);
-	lines(xpos, ypos, col = lcol, ...);
 }
 
-plot.MatrixEQTL = function(x, cex = 0.5, pch = 19, ymin = NULL, ...) {
+plot.MatrixEQTL = function(x, cex = 0.5, pch = 19, xlim = NULL, ylim = NULL, ...) {
 	if( x$param$pvalue.hist == FALSE ) {
 		warning("Cannot plot p-value distribution: the information was not recorded.\nUse pvalue.hist!=FALSE.");
 		return(invisible());
 	}
 	if( x$param$pvalue.hist == "qqplot" ) {
 		xmin = 1/max(x$cis$ntests, x$all$ntests);
-		if( is.null(ymin) ) {
-			ymin = min( x$cis$eqtls$pvalue[1], x$cis$hist.bins[c(FALSE,x$cis$hist.counts>0)][1],
-					x$all$eqtls$pvalue[1], x$all$hist.bins[c(FALSE,x$all$hist.counts>0)][1],
+		ymax = NULL;
+		if(!is.null(ylim)) {
+			ymax = ylim[2];
+		} else {
+			ymax = -log10(min( 
+					x$cis$eqtls$pvalue[1],   x$cis$hist.bins[  c(FALSE,x$cis$hist.counts>0)][1],
+					x$all$eqtls$pvalue[1],   x$all$hist.bins[  c(FALSE,x$all$hist.counts>0)][1],
 					x$trans$eqtls$pvalue[1], x$trans$hist.bins[c(FALSE,x$trans$hist.counts>0)][1],
-					na.rm = TRUE)/1.5;
+					na.rm = TRUE))+0.1;
 		}
-		if(ymin == 0) {
-			ymin == .Machine$double.xmin
+		if(ymax == 0) {
+			ymax = -log10(.Machine$double.xmin)
 		}
-		plot(numeric(),numeric(), xlab = "p-value, theoretical",
-			ylab = "p-value, actual",
-			log = "xy",
-			xlim = c(1, xmin/1.5),
-			ylim = c(1, ymin),
+		if(!is.null(ymax))
+			ylim = c(0,ymax);
+		
+		if(is.null(xlim))
+			xlim =  c(0, -log10(xmin/1.5));
+		
+		plot(numeric(),numeric(), xlab = "-Log10(p-value), theoretical",
+			ylab = "-Log10(p-value), observed",
+			xlim = c(0, -log10(xmin/1.5)),
+			ylim = ylim,
 			xaxs="i", yaxs="i", ...);
-		lines(c(1,xmin), c(1,xmin), col = "gray");
+		lines(c(0,1e3), c(0,1e3), col = "gray");
 		if((x$param$pvOutputThreshold > 0) && (x$param$pvOutputThreshold.cis > 0)) {
 			.qqme( x$cis, "red", cex, pch, ...);
 			.qqme( x$trans, "blue", cex, pch, ...);
-			title(paste("Q-Q plot for",
+			title(paste("QQ-plot for",
 				formatC(x$cis$ntests, big.mark=",", format = "f", digits = 0),
 				"local and",
 				formatC(x$trans$ntests, big.mark=",", format = "f", digits = 0),
@@ -1802,13 +1927,13 @@ plot.MatrixEQTL = function(x, cex = 0.5, pch = 19, ymin = NULL, ...) {
 		} else
 		if(x$param$pvOutputThreshold.cis > 0) {
 			.qqme(x$cis, "red", cex, pch, ...);
-			title(paste("Q-Q plot for",
+			title(paste("QQ-plot for",
 				formatC(x$cis$ntests, big.mark=",", format = "f", digits = 0),
 				"local gene-SNP p-values"));
 			lset = c(1,4);
 		} else {
 			.qqme(x$all, "blue", cex, pch, ...);
-			title(paste("Q-Q plot for all",
+			title(paste("QQ-plot for all",
 				formatC(x$all$ntests, big.mark=",", format = "f", digits = 0),
 				"gene-SNP p-values"));
 			lset = c(3,4);

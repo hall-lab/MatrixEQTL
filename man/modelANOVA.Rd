@@ -43,15 +43,15 @@ gene1
 
 # Call the main analysis function
 me = Matrix_eQTL_main(
-	snps = snps1, 
-	gene = gene1, 
-	cvrt = cvrt1, 
-	output_file_name = filename, 
-	pvOutputThreshold = 1, 
-	useModel = modelANOVA, 
-	errorCovariance = diag(noise.std^2), 
-	verbose = TRUE,
-	pvalue.hist = FALSE );
+  snps = snps1, 
+  gene = gene1, 
+  cvrt = cvrt1, 
+  output_file_name = filename, 
+  pvOutputThreshold = 1, 
+  useModel = modelANOVA, 
+  errorCovariance = diag(noise.std^2), 
+  verbose = TRUE,
+  pvalue.hist = FALSE );
 # remove the output file
 unlink( filename );
 
@@ -62,12 +62,12 @@ pvalue = me$all$eqtls$pvalue;
 rez = c( Fstat = fstat, pvalue = pvalue)
 # And compare to those from ANOVA in R
 {
-	cat('\n\n Matrix eQTL: \n'); 
-	print(rez);
-	cat('\n R anova(lm()) output: \n')
-	lmodel = lm( gene.mat ~ cvrt.mat + factor(snps.mat), weights = 1/noise.std^2 );
-	lmout = anova( lmodel )[2, 4:5];
-	print( lmout )
+  cat('\n\n Matrix eQTL: \n'); 
+  print(rez);
+  cat('\n R anova(lm()) output: \n')
+  lmodel = lm( gene.mat ~ cvrt.mat + factor(snps.mat), weights = 1/noise.std^2 );
+  lmout = anova( lmodel )[2, 4:5];
+  print( lmout )
 }
 
 # Results from Matrix eQTL and 'lm' must agree

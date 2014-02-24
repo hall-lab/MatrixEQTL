@@ -1,7 +1,11 @@
-library('MatrixEQTL')  
-
+# library('MatrixEQTL')	
+			
 # Number of columns (samples)
 n = 100;
+
+# ANOVA groups 
+anova.groups = 5;
+options(MatrixEQTL.ANOVA.categories = anova.groups)
 
 # Number of covariates
 nc = 10;
@@ -13,7 +17,7 @@ noise.std = 0.1 + rnorm(n)^2;
 cvrt.mat = 2 + matrix(rnorm(n*nc), ncol = nc);
 
 # Generate the vectors with single genotype and expression variables
-snps.mat = floor(runif(n, min = 0, max = 3));
+snps.mat = floor(runif(n, min = 0, max = anova.groups));
 gene.mat = 1 + (snps.mat==1) + cvrt.mat %*% rnorm(nc) + rnorm(n) * noise.std;
 
 # Create 3 SlicedData objects for the analysis

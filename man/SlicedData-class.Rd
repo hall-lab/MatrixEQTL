@@ -30,7 +30,7 @@
 	This class is created for fast and memory efficient manipulations with large datasets presented in matrix form.
 	It is used to load, store, and manipulate large datasets, e.g. genotype and gene expression matrices.
 	When a dataset is loaded, it is sliced in blocks of 1,000 rows (default size).
-	This allows to impute, standardize, and perform other operations with the data with minimal memory overhead.
+	This allows imputing, standardizing, and performing other operations with the data with minimal memory overhead.
 }
 \section{Extends}{
 	\code{SlicedData} is a reference classes (\code{\linkS4class{envRefClass}}).
