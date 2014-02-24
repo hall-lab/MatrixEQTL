@@ -1,4 +1,4 @@
-library('MatrixEQTL')	
+library("MatrixEQTL");
 
 # Number of columns (samples)
 n = 100;
@@ -21,8 +21,8 @@ snps1 = SlicedData$new( matrix( snps.mat, nrow = 1 ) );
 gene1 = SlicedData$new( matrix( gene.mat, nrow = 1 ) );
 cvrt1 = SlicedData$new( t(cvrt.mat) );
 
-# name of temporary output file
-filename = tempfile();
+# Produce no output files
+filename = NULL; # tempfile()
 
 # Call the main analysis function
 me = Matrix_eQTL_main(
@@ -35,22 +35,22 @@ me = Matrix_eQTL_main(
 	errorCovariance = diag(noise.std^2), 
 	verbose = TRUE,
 	pvalue.hist = FALSE );
-# remove the output file
-unlink( filename );
 
 # Pull Matrix eQTL results - t-statistic and p-value
 beta = me$all$eqtls$beta;
 tstat = me$all$eqtls$statistic;
 pvalue = me$all$eqtls$pvalue;
-rez = c(beta = beta, tstat = tstat, pvalue = pvalue)
+rez = c(beta = beta, tstat = tstat, pvalue = pvalue);
 # And compare to those from the linear regression in R
 {
-	cat('\n\n Matrix eQTL: \n'); 
+	cat("\n\n Matrix eQTL: \n");
 	print(rez);
-	cat('\n R summary(lm()) output: \n')
-	lmout = summary(lm(gene.mat ~ snps.mat + cvrt.mat, weights = 1/noise.std^2))$coefficients[2, c(1,3,4)];
-	print( lmout )
+	cat("\n R summary(lm()) output: \n");
+	lmdl = lm( gene.mat ~ snps.mat + cvrt.mat,
+						 weights = 1/noise.std^2 );
+	lmout = summary(lmdl)$coefficients[2,c("Estimate","t value","Pr(>|t|)")];
+	print( lmout );
 }
 
-# Results from Matrix eQTL and 'lm' must agree
-stopifnot(all.equal(lmout, rez, check.attributes=FALSE))
+# Results from Matrix eQTL and "lm" must agree
+stopifnot(all.equal(lmout, rez, check.attributes=FALSE));

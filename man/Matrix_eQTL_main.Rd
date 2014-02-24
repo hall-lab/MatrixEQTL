@@ -28,7 +28,7 @@
 	The parameter \code{pvalue.hist} allows to record information sufficient to create a histogram or QQ-plot of all the p-values (see \code{\link[=plot.MatrixEQTL]{plot}}).
 }
 \usage{
-Matrix_eQTL_main(	snps, 
+Matrix_eQTL_main( snps, 
                   gene, 
                   cvrt = SlicedData$new(), 
                   output_file_name = "", 

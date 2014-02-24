@@ -5,11 +5,9 @@
 	Constant for \code{\link{Matrix_eQTL_engine}}.
 }
 \description{
-	Use of the constant as a parameter for \code{\link{Matrix_eQTL_engine}} to indicates that the effect of genotype on expression is modeled to be linear.
+	Set parameter \code{useModel = modelLINEAR} in the call of \code{\link{Matrix_eQTL_main}} to indicate that the effect of genotype on expression should be assumed to be additive linear.
 }
-\usage{
-	modelLINEAR
-}
+
 \examples{
 library('MatrixEQTL')	
 

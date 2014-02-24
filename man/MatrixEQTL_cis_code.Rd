@@ -108,7 +108,7 @@ me = Matrix_eQTL_main(
     snpspos = snpspos, 
     genepos = genepos,
     cisDist = cisDist,
-    pvalue.hist = "qqplot",
+    pvalue.hist = TRUE,
     min.pv.by.genesnp = FALSE,
     noFDRsaveMemory = FALSE);
 
@@ -123,7 +123,7 @@ show(me$cis$eqtls)
 cat('Detected distant eQTLs:', '\n');
 show(me$trans$eqtls)
 
-## Make the QQ-plot of local and distant p-values
+## Make the histogram of local and distant p-values
 
 plot(me)
 }

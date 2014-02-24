@@ -5,11 +5,18 @@
 	Constant for \code{\link{Matrix_eQTL_engine}}.
 }
 \description{
-	Use of the constant as a parameter for \code{\link{Matrix_eQTL_engine}} 
-	to indicates that the genotype should be treated as a categorical variable.
+	Set parameter \code{useModel = modelANOVA} in the call of \code{\link{Matrix_eQTL_main}} to indicate that the genotype should be treated as a categorical variable.
 }
-\usage{
-	modelANOVA
+\note{
+By default, the number of ANOVA categories is fixed to be 3.
+
+To set it to a different number (say, 4) use the following command:
+
+\code{options(MatrixEQTL.ANOVA.categories=4)}
+
+To check the current settings run:
+
+\code{getOption('MatrixEQTL.ANOVA.categories', 3);}
 }
 \examples{
 library('MatrixEQTL')	

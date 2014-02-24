@@ -5,10 +5,7 @@
 	Constant for \code{\link{Matrix_eQTL_engine}}.
 }
 \description{
-	Use of the constant as a parameter for \code{\link{Matrix_eQTL_main}} to indicates that Matrix eQTL should include the interaction of SNP and last covariate in the model and test for its significance.
-}
-\usage{
-	modelLINEAR_CROSS
+	Set parameter \code{useModel = modelLINEAR_CROSS} in the call of \code{\link{Matrix_eQTL_main}} to indicate that Matrix eQTL should include the interaction of SNP and last covariate in the model and test for its significance.
 }
 \examples{
 library('MatrixEQTL')	

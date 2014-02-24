@@ -7,7 +7,7 @@ This method plots a histogram or QQ-plot of p-values
 for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 }
 \usage{
-\method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, xlim = NULL, ylim = NULL,...)
+\method{plot}{MatrixEQTL}(x, cex = 0.5, pch = 19, xlim = NULL, ylim = NULL, main = NULL,...)
 }
 \arguments{
 	\item{x}{
@@ -24,6 +24,9 @@ for all tests performed by \code{\link{Matrix_eQTL_engine}}.
 	}
 	\item{ylim}{
 		Set the range of the vertical axis.
+	}
+	\item{main}{
+		Plot title.
 	}
 	\item{\dots}{
 		further graphical parameters passed to \code{\link[graphics]{lines}} and \code{\link[graphics]{points}}.
