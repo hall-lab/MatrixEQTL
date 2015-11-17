@@ -1148,7 +1148,7 @@ Matrix_eQTL_main = function(
 # 			stopifnot( class(output_file_name.cis) == "character" );
 # 			stopifnot( length(output_file_name.cis) == 1 );
 			stopifnot( class(snpspos) == "data.frame" );
-			stopifnot( ncol(snpspos) == 3 );
+			stopifnot( ncol(snpspos) == 4 );
 			stopifnot( nrow(snpspos) > 0 );
 			stopifnot( class(snpspos[1,3]) %in% c("integer", "numeric") )
 			stopifnot( !any(is.na(snpspos[,3])) )
@@ -1292,13 +1292,13 @@ Matrix_eQTL_main = function(
 		
 		# Single number location for all rows in "genepos" and "snpspos"
  		genepos2 = as.matrix(genepos[ ,3:4, drop = FALSE] + (genechr-1)*chrMax);
- 		snpspos2 = as.matrix(snpspos[ ,3  , drop = FALSE] + (snpschr-1)*chrMax);
+ 		snpspos2 = as.matrix(snpspos[ ,3:4  , drop = FALSE] + (snpschr-1)*chrMax);
 		
 		# the final location arrays;
-		snps_pos = matrix(0,length(snps_names),1);
+		snps_pos = matrix(0,length(snps_names),2);
 		snps_pos[snpsmatch>0, ] = snpspos2[snpsmatch, , drop = FALSE];
 		snps_pos[rowSums(is.na(snps_pos))>0, ] = 0;
-		snps_pos[snps_pos==0] = (length(chrNames)+1) * (chrMax+cisDist);
+		snps_pos[snps_pos==0] = (length(chrNames)+2) * (chrMax+cisDist);
 		rm(snps_names, snpsmatch, usedsnps, snpschr, snpspos2)
 		
 		gene_pos = matrix(0,length(gene_names),2);
@@ -1310,7 +1310,7 @@ Matrix_eQTL_main = function(
 
 		if( is.unsorted(snps_pos) ) {
 			status("Reordering SNPs\n");
-			ordr = sort.list(snps_pos);
+			ordr = sort.list(snps_pos[,1]);
 			snps$RowReorder(ordr);
 			snps_pos = snps_pos[ordr, , drop = FALSE];
 			rm(ordr);
@@ -1340,7 +1340,6 @@ Matrix_eQTL_main = function(
 			snpsloc[[sc]] = snps_pos[snps_offset + (1:nr), , drop = FALSE];
 			snps_offset = snps_offset + nr;	
 		}
-		rm(nr, sc, snps_offset, snps_pos);
 	}
 	################################# Covariates processing #################################
 	{	
@@ -1570,14 +1569,17 @@ Matrix_eQTL_main = function(
 # 			sn.r = sapply(snpsloc, function(x)tail(x,1) );
 # 			ge.l = sapply(geneloc, function(x)x[1,1] );
 # 			ge.r = sapply(geneloc, function(x)x[nrow(x) , 2] );
-			sn.l = sapply(snpsloc, "[", 1 );
-			sn.r = sapply(snpsloc, tail, 1 );
+			sn.l = sapply(snpsloc, "[", 1, 1 );
+			## sn.r = sapply(snpsloc, tail, 1 );
+                        sn.r = sapply( lapply(snpsloc, tail.matrix, 1 ), "[", 2);
+                        
 			ge.l = sapply(geneloc, "[", 1, 1 );
 			ge.r = sapply( lapply(geneloc, tail.matrix, 1 ), "[", 2);
+
 			gg.1 = findInterval( sn.l , ge.r + cisDist +1) + 1;
-# 			cat(gg.1,"\n")
+			## cat(gg.1,"\n")
 			gg.2 = findInterval( sn.r , ge.l - cisDist );
-# 			cat(gg.2,"\n")
+			## cat(gg.2,"\n")
 			rm(sn.l, sn.r, ge.l, ge.r);
  		}
 
@@ -1673,8 +1675,9 @@ Matrix_eQTL_main = function(
 					
 # 					sn.l = findInterval(geneloc[[gg]][ ,1] - cisDist-1  +1   , snpsloc[[ss]]);
 # 					sn.r = findInterval(geneloc[[gg]][ ,2] + cisDist    -1   , snpsloc[[ss]]);
-					sn.l = findInterval(geneloc[[gg]][ ,1] - cisDist-1, snpsloc[[ss]]);
-					sn.r = findInterval(geneloc[[gg]][ ,2] + cisDist, snpsloc[[ss]]);
+					sn.l = findInterval(geneloc[[gg]][ ,1] - cisDist-1, snpsloc[[ss]][ ,2]);
+					sn.r = findInterval(geneloc[[gg]][ ,2] + cisDist, snpsloc[[ss]][ ,1]);
+                                        
 					xx = unlist(lapply(which(sn.r>sn.l),FUN=function(x){(sn.l[x]:(sn.r[x]-1))*nrow(statistic)+x}))
 					select.cis.raw = xx[ astatistic[xx] >= thresh.cis ];
 					select.cis = arrayInd(select.cis.raw, dim(statistic))
