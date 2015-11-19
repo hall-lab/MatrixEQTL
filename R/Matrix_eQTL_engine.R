@@ -1288,7 +1288,7 @@ Matrix_eQTL_main = function(
 		snpschr = match(snpspos[,2],chrNames);
 		
 		# max length of a chromosome
-		chrMax = max( snpspos[usedsnps, 3], genepos[usedgene, 4], na.rm = TRUE) + cisDist;
+		chrMax = max( snpspos[usedsnps, 4], genepos[usedgene, 4], na.rm = TRUE) + cisDist;
 		
 		# Single number location for all rows in "genepos" and "snpspos"
  		genepos2 = as.matrix(genepos[ ,3:4, drop = FALSE] + (genechr-1)*chrMax);
@@ -1675,10 +1675,28 @@ Matrix_eQTL_main = function(
 					
 # 					sn.l = findInterval(geneloc[[gg]][ ,1] - cisDist-1  +1   , snpsloc[[ss]]);
 # 					sn.r = findInterval(geneloc[[gg]][ ,2] + cisDist    -1   , snpsloc[[ss]]);
-					sn.l = findInterval(geneloc[[gg]][ ,1] - cisDist-1, snpsloc[[ss]][ ,2]);
+
+                                        ## snpsloc.rsort[[ss]] <- snpsloc[[ss]]
+                                        snpsloc.rsort <- snpsloc[[ss]][order(snpsloc[[ss]][,2]),]
+					sn.l = findInterval(geneloc[[gg]][ ,1] - cisDist-1, snpsloc.rsort[ ,2]);
 					sn.r = findInterval(geneloc[[gg]][ ,2] + cisDist, snpsloc[[ss]][ ,1]);
+
+                                        ## print(lapply(which(sn.r>sn.l),FUN=function(x){(sn.l[x]:(sn.r[x]-1))*nrow(statistic)+x}))
+
+                                        filter_cis <- function(x) {
+                                          candidates <- (sn.l[x]:(sn.r[x] - 1))
+                                          gene.start <- geneloc[[gg]][x,1]
+                                          gene.end <- geneloc[[gg]][x,2]
+
+                                          filtered_candidates <- candidates[which(snpsloc[[ss]][candidates + 1, 1] < (gene.end + cisDist) & snpsloc[[ss]][candidates + 1,2] > (gene.start - cisDist - 1))]
+
+                                          return(filtered_candidates * nrow(statistic) + x)
+                                        }
                                         
-					xx = unlist(lapply(which(sn.r>sn.l),FUN=function(x){(sn.l[x]:(sn.r[x]-1))*nrow(statistic)+x}))
+					## xx = unlist(lapply(which(sn.r>sn.l),FUN=function(x){(sn.l[x]:(sn.r[x]-1))*nrow(statistic)+x}))
+                                        xx = unlist(lapply(which(sn.r>sn.l),FUN=filter_cis))
+
+
 					select.cis.raw = xx[ astatistic[xx] >= thresh.cis ];
 					select.cis = arrayInd(select.cis.raw, dim(statistic))
 					
